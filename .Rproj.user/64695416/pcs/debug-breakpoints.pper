@@ -1,0 +1,21 @@
+{
+    "debugBreakpointsState": {
+        "breakpoints": [
+            {
+                "id": 0,
+                "path": "~/phase.portrait/R/calculate_derivatives.R",
+                "line_number": 26,
+                "function_steps": "2",
+                "function_name": "calculate_derivatives",
+                "state": 1,
+                "editor_state": 1,
+                "editor_line_number": 26,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": true,
+                "type": 0,
+                "is_package_breakpoint": true,
+                "package_name": "phase.portrait"
+            }
+        ]
+    }
+}

@@ -1,0 +1,274 @@
+#' @name run_analysis
+#' @title Run Analysis and Generate Phase Portrait Plots
+#' This function performs an in-depth analysis on a dataset to produce various visualizations, including phase portraits, trajectory plots, and other dynamic plots in phase space. Users can specify different analysis options (standard or fraction-based), save individual or combined plot outputs, and control the granularity of binning and parallel processing.
+#' @param df A data frame containing the dataset with columns `x`, `y`, `dx`, `dy`, `x_variable`, `y_variable`.
+#' @param option A character string specifying the analysis type. Options include "all" (default), "standard", or "fraction".
+#' @param n_bins Integer specifying the number of bins to discretize `x` and `y` in phase line calculations. Default is 4.
+#' @param min_bin_n Integer specifying the minimum number of observations required in each bin. Default is 1.
+#' @param save_tables Logical. If TRUE, saves intermediary data tables generated during analysis. Default is FALSE.
+#' @param plot_individual Logical. If TRUE, saves each individual plot generated during the analysis. Default is FALSE.
+#' @param plot_combined Logical. If TRUE, saves combined plots into one file for easy comparison. Default is TRUE.
+#' @param n_cores Integer specifying the number of cores to use for parallel processing. Default is NULL (auto-detect).
+#' @param phase_line_tables Character string specifying phase line table output format: "binned", "average", or "all". Default is "all".
+#'
+#' @details
+#' The `run_analysis` function is designed to process and visualize phase space data comprehensively, providing flexibility for standard and fraction-based representations of the data. The function offers several customizable options for binning, minimum observations per bin, and parallel processing. Users can select to save intermediary data tables, individual plots, or combined plots based on their analysis needs. The main components of this function include:
+#'
+#' - **Phase Space Calculation**: Calls `phase_space()` to compute the core phase space dataset, using parallel processing if specified.
+#' - **Data Preparation for Plotting**: Computes additional summary tables, including `pseudotime_trajectory()`, `phase_portrait()`, and `phase_lines()` based on the selected `option`. Both standard and fraction-based versions can be generated, providing an in-depth view of phase space dynamics.
+#' - **Plot Generation**: Creates various types of plots to visualize dynamics, including:
+#'     - `trajectory_plots`: Displays pseudotime trajectories in phase space.
+#'     - `all_trajectory_plots`: Shows all sample trajectories over pseudotime.
+#'     - `stream_plots`: Displays dynamic phase portrait streams, representing variable changes over time.
+#'     - `phase_portrait_plots`: Shows a static view of the phase portrait, summarizing variable interactions.
+#'     - `phase_line_plots`: Visualizes phase lines across binned data, providing insights into directional trends.
+#'     - `n_plots`: Highlights the observation count within each phase space bin.
+#' - **Fraction-Based Plots**: Mirrors the standard plots but operates on a fraction-based representation of the data, with plot types prefixed by `fract_`.
+#' - **Plot Merging**: If `plot_combined` is TRUE, combines selected plots into a single layout for easier comparison and visualization of results, saving it as a single PDF file.
+#' - **Error Handling**: Each data processing and plotting step is wrapped in error handling, ensuring any issues are reported without halting the entire workflow.
+#' - **Parallel Processing**: Supports parallel processing with `n_cores` to optimize performance for large datasets.
+#'
+#' This function is well-suited for exploratory data analysis and visual interpretation of phase space dynamics, especially valuable when examining complex systems over time. Enabling `save_tables` or `plot_individual` can result in multiple file outputs for detailed analysis, while combined plots are saved as a single PDF for convenience.
+#'
+#' @return This function saves the generated plots and does not return a value.
+#'
+#' @examples
+#' # Example usage:
+#' df <- data.frame(x = rnorm(100), y = rnorm(100), dx = rnorm(100), dy = rnorm(100),
+#'                  x_variable = "X Axis", y_variable = "Y Axis")
+#' run_analysis(df, option = "all", n_bins = 4, min_bin_n = 1, save_tables = TRUE, plot_individual = TRUE)
+#' @export
+library(gridExtra)
+library(data.table)
+library(ggplot2)
+library(dplyr)
+run_analysis <- function(df, option = "all", n_bins = 4, min_bin_n = 1, save_tables = FALSE, plot_individual = FALSE, plot_combined = TRUE, n_cores = NULL, phase_line_tables = "all") {
+
+  original_option <- option  # Store the original option for later use
+
+  # Set the number of cores for parallel processing
+  if (is.null(n_cores)) {
+    n_cores <- max(1, detectCores() - 2)
+  }
+
+  # Validate phase_line_tables argument
+  if (!phase_line_tables %in% c("binned", "average", "all")) {
+    stop("Invalid phase_line_tables type: Choose 'binned', 'average', or 'all'")
+  }
+
+  # Generate the phase space table
+  phase_space_dt <- tryCatch({
+    phase_space(df, n_cores = n_cores, save = save_tables)
+  }, error = function(e) {
+    cat("Error in generating phase space table:", e$message, "\n")
+    return(NULL)
+  })
+
+  # Define lists for different types of plot options
+  standard_list <- c("trajectory_plots", "all_trajectory_plots", "stream_plots", "phase_portrait_plots", "phase_line_plots", "n_plots")
+  fraction_list <- paste0("fract_", standard_list)
+
+  # Adjust the plot options based on the chosen option
+  if (original_option == "all") {
+    option <- c(standard_list, fraction_list)
+  } else if (original_option == "standard") {
+    option <- standard_list
+  } else if (original_option == "fraction") {
+    option <- fraction_list
+  }
+
+  # Calculate necessary data for both standard and fraction plots if needed
+  pseudotime_trajectory_dt <- if ("trajectory_plots" %in% option || "fract_trajectory_plots" %in% option) {
+    tryCatch({
+      pseudotime_trajectory(phase_space_dt, save = save_tables)
+    }, error = function(e) {
+      cat("Error in calculating pseudotime trajectory:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  phase_portrait_dt <- if ("stream_plots" %in% option || "phase_portrait_plots" %in% option || "phase_line_plots" %in% option || "n_plots" %in% option) {
+    tryCatch({
+      phase_portrait(phase_space_dt, n_bins = n_bins, min_bin_n = min_bin_n, save = save_tables)
+    }, error = function(e) {
+      cat("Error in calculating phase portrait:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  phase_lines_dt <- if ("phase_line_plots" %in% option) {
+    tryCatch({
+      phase_lines(phase_portrait_dt, n_bins = n_bins, min_bin_n = min_bin_n, output = phase_line_tables)
+    }, error = function(e) {
+      cat("Error in calculating phase lines:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  fract_pseudotime_trajectory_dt <- if ("fract_trajectory_plots" %in% option) {
+    tryCatch({
+      pseudotime_trajectory(phase_space_dt, save = save_tables, input = "fraction")
+    }, error = function(e) {
+      cat("Error in calculating fractional pseudotime trajectory:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  fract_phase_portrait_dt <- if ("fract_stream_plots" %in% option || "fract_phase_portrait_plots" %in% option || "fract_phase_line_plots" %in% option || "fract_n_plots" %in% option) {
+    tryCatch({
+      phase_portrait(phase_space_dt, n_bins = n_bins, min_bin_n = min_bin_n, save = save_tables, input = "fraction")
+    }, error = function(e) {
+      cat("Error in calculating fractional phase portrait:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  fract_lines_dt <- if ("fract_phase_line_plots" %in% option) {
+    tryCatch({
+      phase_lines(fract_phase_portrait_dt, n_bins = n_bins, min_bin_n = min_bin_n, input = "fraction", output = phase_line_tables)
+    }, error = function(e) {
+      cat("Error in calculating fractional phase lines:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  # Calculate delta limits if any line plot option is selected
+  delta_limits <- if (!is.null(phase_lines_dt) || !is.null(fract_lines_dt)) {
+    tryCatch({
+      all_phase_lines <- rbind(phase_lines_dt, fract_lines_dt, fill = TRUE)
+      range(all_phase_lines$y, na.rm = TRUE)
+    }, error = function(e) {
+      cat("Error in calculating delta limits:", e$message, "\n")
+      return(NULL)
+    })
+  } else NULL
+
+  # Generate plots based on the selected options
+  if ("trajectory_plots" %in% option) {
+    tryCatch({
+      trajectory_plots <- iterate_plotting(pseudotime_trajectory_dt, plot_trajectory, save = plot_individual)
+    }, error = function(e) {
+      cat("Error in generating trajectory plots:", e$message, "\n")
+    })
+  }
+  if ("all_trajectory_plots" %in% option) {
+    tryCatch({
+      all_trajectory_plots <- iterate_plotting(phase_space_dt, plot_all_trajectories, save = plot_individual)
+    }, error = function(e) {
+      cat("Error in generating all trajectory plots:", e$message, "\n")
+    })
+  }
+  if ("stream_plots" %in% option) {
+    tryCatch({
+      stream_plots <- iterate_plotting(phase_portrait_dt, plot_stream, n_bins = n_bins, save = plot_individual)
+    }, error = function(e) {
+      cat("Error in generating stream plots:", e$message, "\n")
+    })
+  }
+  if ("phase_portrait_plots" %in% option) {
+    tryCatch({
+      phase_portrait_plots <- iterate_plotting(phase_portrait_dt, plot_phase_portrait, save = plot_individual)
+    }, error = function(e) {
+      cat("Error in generating phase portrait plots:", e$message, "\n")
+    })
+  }
+  if ("phase_line_plots" %in% option && !is.null(delta_limits)) {
+    tryCatch({
+      phase_line_plots <- iterate_plotting(phase_lines_dt, plot_phase_line, min_y = delta_limits[1], max_y = delta_limits[2])
+    }, error = function(e) {
+      cat("Error in generating phase line plots:", e$message, "\n")
+    })
+  }
+  if ("n_plots" %in% option) {
+    tryCatch({
+      n_plots <- iterate_plotting(phase_portrait_dt, plot_n, n_bins = n_bins, save = plot_individual)
+    }, error = function(e) {
+      cat("Error in generating n plots:", e$message, "\n")
+    })
+  }
+
+  # Repeat similar plot generation process for fraction-based options
+  if ("fract_trajectory_plots" %in% option) {
+    tryCatch({
+      fract_trajectory_plots <- iterate_plotting(fract_pseudotime_trajectory_dt, plot_trajectory)
+    }, error = function(e) {
+      cat("Error in generating fractional trajectory plots:", e$message, "\n")
+    })
+  }
+  if ("fract_all_trajectory_plots" %in% option) {
+    tryCatch({
+      fract_all_trajectory_plots <- iterate_plotting(phase_space_dt, plot_all_trajectories, input = "fraction")
+    }, error = function(e) {
+      cat("Error in generating fractional all trajectory plots:", e$message, "\n")
+    })
+  }
+  if ("fract_stream_plots" %in% option) {
+    tryCatch({
+      fract_stream_plots <- iterate_plotting(fract_phase_portrait_dt, plot_stream)
+    }, error = function(e) {
+      cat("Error in generating fractional stream plots:", e$message, "\n")
+    })
+  }
+  if ("fract_phase_portrait_plots" %in% option) {
+    tryCatch({
+      fract_phase_portrait_plots <- iterate_plotting(fract_phase_portrait_dt, plot_phase_portrait)
+    }, error = function(e) {
+      cat("Error in generating fractional phase portrait plots:", e$message, "\n")
+    })
+  }
+  if ("fract_phase_line_plots" %in% option && !is.null(delta_limits)) {
+    tryCatch({
+      fract_phase_line_plots <- iterate_plotting(fract_lines_dt, plot_phase_line, min_y = delta_limits[1], max_y = delta_limits[2], fixed_axes = FALSE)
+    }, error = function(e) {
+      cat("Error in generating fractional phase line plots:", e$message, "\n")
+    })
+  }
+  if ("fract_n_plots" %in% option) {
+    tryCatch({
+      fract_n_plots <- iterate_plotting(fract_phase_portrait_dt, plot_n, n_bins = n_bins, save = plot_individual, input = "fraction")
+    }, error = function(e) {
+      cat("Error in generating fractional n plots:", e$message, "\n")
+    })
+  }
+
+  # Generate variable list to prepare for combinations
+  variable_list <- df %>%
+    ungroup() %>%
+    select(variable) %>%
+    distinct() %>%
+    pull(variable)
+
+  # Define a helper function to merge plots and arrange them into a grid
+  merge_plots <- function(i, option) {
+    # Define plot elements and layout based on the option type
+    plot_elements <- if (option == "all") {
+      list(
+        trajectory_plots[[i]], all_trajectory_plots[[i]], n_plots[[i]], phase_portrait_plots[[i]],
+        stream_plots[[i]], phase_line_plots[[i]], fract_trajectory_plots[[i]], fract_all_trajectory_plots[[i]],
+        fract_n_plots[[i]], fract_phase_portrait_plots[[i]], fract_stream_plots[[i]], fract_phase_line_plots[[i]]
+      )
+    } else if (option == "standard") {
+      list(
+        trajectory_plots[[i]], all_trajectory_plots[[i]], n_plots[[i]], phase_portrait_plots[[i]],
+        stream_plots[[i]], phase_line_plots[[i]]
+      )
+    } else if (option == "fraction") {
+      list(
+        fract_trajectory_plots[[i]], fract_all_trajectory_plots[[i]], fract_n_plots[[i]],
+        fract_phase_portrait_plots[[i]], fract_stream_plots[[i]], fract_phase_line_plots[[i]]
+      )
+    }
+    # Arrange combined plot into a grid layout and save
+    combined_plot <- grid.arrange(grobs = plot_elements, layout_matrix = matrix(c(1, 2, 3, 4, 5, 6), nrow = 2))
+    ggsave(filename = paste0(variable_list[i], "_combined_plot.pdf"), plot = combined_plot, height = 10, width = 15)
+  }
+
+  # Apply merge function if combined plotting is requested
+  if (plot_combined) {
+    tryCatch({
+      lapply(1:NROW(variable_list), function(i) merge_plots(i, original_option))
+    }, error = function(e) {
+      cat("Error in merging and saving combined plots:", e$message, "\n")
+    })
+  }
+}

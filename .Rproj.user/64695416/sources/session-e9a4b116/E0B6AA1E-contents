@@ -1,0 +1,65 @@
+table_path <- "~/ovarian_cancer_long.csv"
+save_path <- "/Users/rdeliza/Desktop/phase_portraits"
+n_bins = 5 # For x/y of phase portrait
+min_bin_n = 1
+
+setwd(dirname(save_path))
+dir.create(save_path)
+setwd(save_path)
+
+save_path <- file.path(save_path, paste("n_bins", n_bins))
+dir.create(save_path)
+setwd(save_path)
+
+# genes <- table %>% ungroup() %>% select(variable) %>% distinct() %>% pull(variable)
+# genes[grepl("TP53", genes)]
+
+library(data.table)
+library(dplyr)
+
+# Load all package functions
+library(usethis)
+library(devtools)
+devtools::load_all("/Users/rdeliza/phase.portrait")
+usethis::create_package("/Users/rdeliza/phase.portrait")
+
+
+table <-
+  fread(table_path) %>% 
+  filter( 
+    Genes %in% c("CTNNB1", "CDH1", "TP53BP1")
+  ) %>% 
+  filter(
+    # Remove unknowns
+    Genes != ""
+  ) %>% 
+  # Remove unecessary variables
+  select(-c(Z_Score, Stage)) %>%
+  # Standardize data
+  rename(
+    value = Median_Subtracted, # Select data source
+    pseudotime = Stage_Numeric, # Time equivalent
+    sample = Patient,
+    condition = Compartment,
+    variable = Genes
+  )
+
+
+# Clean the table
+table <- normalize_values(table)
+table <- calculate_derivatives(table)
+run_analysis(table)
+
+
+setwd("/Users/rdeliza/phase.portrait")
+
+usethis::proj_get()
+
+usethis::use_readme_rmd()
+
+usethis::proj_get()
+
+devtools::document()
+
+devtools::build_manual()
+

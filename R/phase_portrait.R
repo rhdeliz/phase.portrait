@@ -1,0 +1,90 @@
+#' @name phase_portrait
+#' @title Generate Phase Portrait Summary (Standard or Fraction-Based)
+#' This function generates a phase portrait by binning `x` and `y` variables into discrete intervals and calculating the median rate of change (`dx` and `dy`) within each bin. It can be used to visualize the dynamics of two variables over binned states, either as a standard portrait or as a fraction-based portrait where `x` values are represented as fractions of the sum `(x + y)`.
+#' @param df A data frame containing the following columns:
+#'   - `condition`: Factor or character column indicating the experimental or observational condition.
+#'   - `x`: Numeric column representing values for the x-axis variable.
+#'   - `y`: Numeric column representing values for the y-axis variable.
+#'   - `dx`: Numeric column representing the rate of change of `x`.
+#'   - `dy`: Numeric column representing the rate of change of `y`.
+#'   - `x_variable`, `y_variable`: Character or factor columns identifying the variables.
+#' @param n_bins Integer specifying the number of bins to discretize `x` and `y` variables. Default is 4.
+#' @param min_bin_n Integer specifying the minimum number of observations required in each bin for it to be included in the output. Default is 1.
+#' @param input Character string specifying the input of data, either "standard" for standard binning or "fraction" for fraction-based binning.
+#' @return A data frame with summarized phase portrait data containing:
+#'   - `condition`, `x_variable`, `y_variable`: Grouping columns from the input.
+#'   - `x`, `y`: Discretized values of `x` and `y` or fractional representation of `x` and total size as `y`.
+#'   - `dx`, `dy`: Median values of `dx` and `dy` within each bin.
+#'   - `n`: Number of observations in each bin.
+#'   - `x_label`, `y_label`: Labels for x and y variables, adapted based on the input.
+#'   - `dx_label`, `dy_label`: Labels for rate of change for x and y variables.
+#'   - `input`: The input of the data ("standard" or "fraction").
+#' @examples
+#' # Example usage
+#' phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "standard")
+#' phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "fraction")
+#' @export
+library(data.table)
+library(dplyr)
+
+phase_portrait <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", save = FALSE) {
+
+  # Validate input
+  if (!input %in% c("standard", "fraction")) {
+    stop("Invalid input: Choose 'standard' or 'fraction'")
+  }
+
+  # Adjust binning parameter for zero-based rounding
+  n_bins <- n_bins - 1
+
+  # Define labels for x and y based on input
+  if (input == "fraction") {
+    df <- df %>%
+      mutate(
+        y = x + y,                     # Set `y` as the total size
+        x = x / y,                     # Calculate `x` as a fraction of the size
+        x_label = paste0(x_variable, " pct"),      # Label for fractional `x`
+        y_label = paste0(x_variable, " + ", y_variable)  # Label for size-based `y`
+      )
+  } else {
+    df <- df %>%
+      mutate(
+        x_label = x_variable,           # Standard label for `x`
+        y_label = y_variable            # Standard label for `y`
+      )
+  }
+
+  # Bin `x` and `y`, then calculate summaries
+  phase_portrait_dt <- df %>%
+    mutate(
+      x = round(x * n_bins) / n_bins,    # Discretize `x`
+      y = round(y * n_bins) / n_bins     # Discretize `y`
+    ) %>%
+    group_by(
+      condition, x_variable, y_variable, x, y, x_label, y_label
+    ) %>%  # Include `x_label` and `y_label` in the grouping
+    summarize(
+      dx = median(dx, na.rm = T),                   # Median rate of change for `x`
+      dy = median(dy, na.rm = T),                   # Median rate of change for `y`
+      n = n(),                           # Count of observations in each bin
+      .groups = "drop"
+    ) %>%
+    filter(n >= min_bin_n) %>%           # Filter bins with fewer than min_bin_n observations
+    mutate(
+      dx_label = paste("dx:", x_label),
+      dy_label = paste("dy:", y_label),
+      input = input
+    ) %>%
+    as.data.table()
+
+  if(save == TRUE){
+    fwrite(
+      phase_portrait_dt,
+      paste0("phase_portrait_dt ",
+             ifelse(input=="standard", "", input),
+             " n_bins", n_bins,
+             ".csv")
+    )
+  }
+  return(phase_portrait_dt)
+}
