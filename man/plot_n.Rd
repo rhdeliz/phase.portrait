@@ -7,7 +7,7 @@ This function creates a phase space plot displaying the count (\code{n}) of obse
 \arguments{
 \item{df}{A data frame containing \code{x}, \code{y}, \code{n}, \code{condition}, \code{x_variable}, and \code{y_variable}.}
 
-\item{n_bins}{Integer specifying the number of bins to use for x and y axes. Default is 4.}
+\item{bin_width}{Integer specifying the number of bins to use for x and y axes. Default is 4.}
 
 \item{input}{A character string specifying the input type, either "standard" or "fraction". Default is "standard".}
 
@@ -25,5 +25,5 @@ Plot Cell Count (N) in Phase Space
 This function creates a phase space plot displaying the count (\code{n}) of observations in each bin. The plot can be generated for either standard or fraction-based input types, and provides options to customize axis limits, enforce a fixed aspect ratio, and save the plot to a file.
 }
 \examples{
-plot_n(df, n_bins = 4, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
+plot_n(df, bin_width = 4, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
 }

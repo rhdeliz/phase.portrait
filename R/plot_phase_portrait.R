@@ -17,8 +17,14 @@ library(metR)
 #' @examples
 #' plot_phase_portrait(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
 #' @export
-
-plot_phase_portrait <- function(df, input = "standard", min_x = NULL, max_x = NULL, min_y = NULL, max_y = NULL, save = FALSE){
+#' @import data.table
+#' @import dplyr
+#' @import ggplot2
+#' @import viridis
+#' @import metR
+plot_phase_portrait <- function(df, input = "standard", bin_width = 0.25, min_x = NULL,
+                                max_x = NULL, min_y = NULL, max_y = NULL,
+                                save = FALSE, fix_coord = FALSE){
 
   # Override 'input' with df$input[1] if 'input' column exists in df
   if("input" %in% names(df)) {
@@ -38,6 +44,8 @@ plot_phase_portrait <- function(df, input = "standard", min_x = NULL, max_x = NU
       dy_unit = dy / color * 1     # Normalize dy for unit arrow length
     )
 
+  arrow_length <- bin_width*5
+
   # Initialize ggplot with arrows representing phase dynamics
   plot <- ggplot() +
     geom_arrow(                     # Custom arrow geometry for phase portrait
@@ -48,10 +56,10 @@ plot_phase_portrait <- function(df, input = "standard", min_x = NULL, max_x = NU
         color = color,
         mag = .5                    # Control arrow size (customize as needed)
       ),
-      arrow.length = 1              # Length of arrows (customize as needed)
+      arrow.length = arrow_length              # Length of arrows (customize as needed)
     ) +
     scale_mag(                      # Scale arrowhead size
-      max = 1.5,                    # Big arrow head
+      max = 1/(arrow_length/1.5),                    # Big arrow head
       guide = 'none'                # Hide guide for arrow magnitude
     ) +
     scale_color_viridis() +         # Color scale for the magnitude
@@ -69,6 +77,9 @@ plot_phase_portrait <- function(df, input = "standard", min_x = NULL, max_x = NU
       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Tilt x-axis text
     )
 
+  if(input == "standard" || fix_coord){
+    plot <- plot + coord_fixed()
+  }
   # Add optional x and y axis limits
   if(!is.null(min_x) && !is.null(max_x)) {
     plot <- plot + scale_x_continuous(limits = c(min_x, max_x))
@@ -77,15 +88,11 @@ plot_phase_portrait <- function(df, input = "standard", min_x = NULL, max_x = NU
     plot <- plot + scale_y_continuous(limits = c(min_y, max_y))
   }
 
-  # Apply fixed aspect ratio for non-fractional plots to maintain shape consistency
-  if (input != "fraction") {
-    plot <- plot + coord_fixed()
-  }
-
   # Optionally save the plot as a PDF file with filename based on input type and variables
   if (save) {
     ggsave(
-      filename = paste0("phase_portrait_", input, "_", unique(df$x_variable), "_", unique(df$y_variable), ".pdf"),
+      filename = paste0("phase_portrait_",
+                        df$x_variable[1], "_", df$y_variable[1], "_", input,  ".pdf"),
       plot = plot,
       height = 4, width = 6
     )

@@ -4,6 +4,9 @@
 \alias{phase_space}
 \title{Generate Phase Space for Pairwise Variable Analysis with Parallel Processing
 This function calculates the phase space for all pairwise combinations of variables within a data frame. It computes phase portraits by pairing each variable's values and their derivatives, then merges them into a combined phase space data frame. Parallel processing is supported for improved performance.}
+\usage{
+phase_space(df, n_cores = NULL, save = FALSE)
+}
 \arguments{
 \item{df}{A data frame containing the following columns:
 \itemize{

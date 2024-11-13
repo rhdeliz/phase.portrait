@@ -4,14 +4,30 @@
 \alias{run_analysis}
 \title{Run Analysis and Generate Phase Portrait Plots
 This function performs an in-depth analysis on a dataset to produce various visualizations, including phase portraits, trajectory plots, and other dynamic plots in phase space. Users can specify different analysis options (standard or fraction-based), save individual or combined plot outputs, and control the granularity of binning and parallel processing.}
+\usage{
+run_analysis(
+  df,
+  bin_width = 0.25,
+  min_bin_n = 1,
+  option = "all",
+  phase_line_tables = "all",
+  save_tables = TRUE,
+  plot_individual = TRUE,
+  plot_combined = TRUE,
+  n_cores = NULL,
+  stream_resolution = 25
+)
+}
 \arguments{
 \item{df}{A data frame containing the dataset with columns \code{x}, \code{y}, \code{dx}, \code{dy}, \code{x_variable}, \code{y_variable}.}
 
-\item{option}{A character string specifying the analysis type. Options include "all" (default), "standard", or "fraction".}
-
-\item{n_bins}{Integer specifying the number of bins to discretize \code{x} and \code{y} in phase line calculations. Default is 4.}
+\item{bin_width}{Integer specifying the number of bins to discretize \code{x} and \code{y} in phase line calculations. Default is 4.}
 
 \item{min_bin_n}{Integer specifying the minimum number of observations required in each bin. Default is 1.}
+
+\item{option}{A character string specifying the analysis type. Options include "all" (default), "standard", or "fraction".}
+
+\item{phase_line_tables}{Character string specifying phase line table output format: "binned", "average", or "all". Default is "all".}
 
 \item{save_tables}{Logical. If TRUE, saves intermediary data tables generated during analysis. Default is FALSE.}
 
@@ -20,8 +36,6 @@ This function performs an in-depth analysis on a dataset to produce various visu
 \item{plot_combined}{Logical. If TRUE, saves combined plots into one file for easy comparison. Default is TRUE.}
 
 \item{n_cores}{Integer specifying the number of cores to use for parallel processing. Default is NULL (auto-detect).}
-
-\item{phase_line_tables}{Character string specifying phase line table output format: "binned", "average", or "all". Default is "all".}
 }
 \value{
 This function saves the generated plots and does not return a value.
@@ -56,5 +70,5 @@ This function is well-suited for exploratory data analysis and visual interpreta
 # Example usage:
 df <- data.frame(x = rnorm(100), y = rnorm(100), dx = rnorm(100), dy = rnorm(100),
                  x_variable = "X Axis", y_variable = "Y Axis")
-run_analysis(df, option = "all", n_bins = 4, min_bin_n = 1, save_tables = TRUE, plot_individual = TRUE)
+run_analysis(df, option = "all", bin_width = 4, min_bin_n = 1, save_tables = TRUE, plot_individual = TRUE)
 }

@@ -4,16 +4,6 @@
 \alias{iterate_plotting}
 \title{Generate Multiple Plots with Fixed or Dynamic Axes
 This function iterates over a dataset and generates multiple plots using a specified plotting function. It supports fixed or dynamic axis limits based on the overall dataset or additional arguments provided. Each subset of data is passed to the plotting function along with optional parameters.}
-\usage{
-iterate_plotting(
-  df,
-  fx,
-  input = "standard",
-  fixed_axes = TRUE,
-  save = FALSE,
-  ...
-)
-}
 \arguments{
 \item{df}{A data frame containing the dataset with \code{x}, \code{y}, \code{x_label}, and \code{y_label} columns.}
 
@@ -38,5 +28,4 @@ This function iterates over a dataset and generates multiple plots using a speci
 \examples{
 # Example usage:
 # plots <- iterate_plotting(df, fx = plot_phase_portrait, input = "standard", fixed_axes = TRUE)
-#' @export
 }

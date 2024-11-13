@@ -8,7 +8,7 @@
 #'   - `dx`: Numeric column representing the rate of change of `x`.
 #'   - `dy`: Numeric column representing the rate of change of `y`.
 #'   - `x_variable`, `y_variable`: Character or factor columns identifying the variables.
-#' @param n_bins Integer specifying the number of bins to discretize `x` and `y` variables. Default is 4.
+#' @param bin_width Integer specifying the number of bins to discretize `x` and `y` variables. Default is 4.
 #' @param min_bin_n Integer specifying the minimum number of observations required in each bin for it to be included in the output. Default is 1.
 #' @param input Character string specifying the input of data, either "standard" for standard binning or "fraction" for fraction-based binning.
 #' @return A data frame with summarized phase portrait data containing:
@@ -21,13 +21,12 @@
 #'   - `input`: The input of the data ("standard" or "fraction").
 #' @examples
 #' # Example usage
-#' phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "standard")
-#' phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "fraction")
+#' phase_portrait(df, bin_width = 5, min_bin_n = 2, input = "standard")
+#' phase_portrait(df, bin_width = 5, min_bin_n = 2, input = "fraction")
 #' @export
-library(data.table)
-library(dplyr)
-
-phase_portrait <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", save = FALSE) {
+#' @import data.table
+#' @import dplyr
+phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard", save = FALSE) {
 
   # Validate input
   if (!input %in% c("standard", "fraction")) {
@@ -35,30 +34,40 @@ phase_portrait <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", sa
   }
 
   # Adjust binning parameter for zero-based rounding
-  n_bins <- n_bins - 1
+  bin_width <- 1/bin_width
 
+  if(input != "standard"){
+    bin_width
+  }
+
+  setDT(df)
   # Define labels for x and y based on input
   if (input == "fraction") {
-    df <- df %>%
-      mutate(
-        y = x + y,                     # Set `y` as the total size
-        x = x / y,                     # Calculate `x` as a fraction of the size
-        x_label = paste0(x_variable, " pct"),      # Label for fractional `x`
-        y_label = paste0(x_variable, " + ", y_variable)  # Label for size-based `y`
-      )
+    df[, `:=`(
+      y = x + y,                                   # Set `y` as the total size
+      x = x / (x + y),                             # Calculate `x` as a fraction of the size
+      x_label = paste0(x_variable, " pct"),        # Label for fractional `x`
+      y_label = paste0(x_variable, " + ", y_variable)  # Label for size-based `y`
+    )]
+    df[, y := y/2]
   } else {
     df <- df %>%
       mutate(
         x_label = x_variable,           # Standard label for `x`
         y_label = y_variable            # Standard label for `y`
       )
+
+    df[, `:=`(
+      x_label = x_variable,        # Label for `x`
+      y_label = y_variable      # Label for `y`
+    )]
   }
 
   # Bin `x` and `y`, then calculate summaries
   phase_portrait_dt <- df %>%
     mutate(
-      x = round(x * n_bins) / n_bins,    # Discretize `x`
-      y = round(y * n_bins) / n_bins     # Discretize `y`
+      x = round(x * bin_width) / bin_width,    # Discretize `x`
+      y = round(y * bin_width) / bin_width     # Discretize `y`
     ) %>%
     group_by(
       condition, x_variable, y_variable, x, y, x_label, y_label
@@ -80,10 +89,10 @@ phase_portrait <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", sa
   if(save == TRUE){
     fwrite(
       phase_portrait_dt,
-      paste0("phase_portrait_dt ",
-             ifelse(input=="standard", "", input),
-             " n_bins", n_bins,
-             ".csv")
+      paste0("phase_portrait",
+             ifelse(input=="standard", "", paste0("_", input)),
+             "_bin_width_", bin_width,
+             ".csv.gz")
     )
   }
   return(phase_portrait_dt)

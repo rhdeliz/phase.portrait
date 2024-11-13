@@ -10,11 +10,12 @@
 #' @examples
 #' plot_phase_line(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
 #' @export
-library(ggplot2)
-library(viridis)
-library(dplyr)
-library(data.table)
-plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL, min_y = NULL, max_y = NULL, save = FALSE) {
+#' @import data.table
+#' @import dplyr
+#' @import ggplot2
+#' @import viridis
+plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL,
+                            min_y = NULL, max_y = NULL, save = FALSE, fix_coord = FALSE) {
 
   # Override 'input' if 'input' column exists in df
   if("input" %in% names(df)) {
@@ -27,35 +28,45 @@ plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL, 
   }
 
   # Initialize plot with horizontal line at y = 0 for reference
-  plot <- ggplot(df) +
+  plot <-
+    df %>%
+    arrange(
+      x, y
+    ) %>%
+    mutate(
+      n = log(n+1)
+    ) %>%
+    ggplot() +
     geom_hline(yintercept = 0) +
     geom_point(aes(x = x, y = y, size = n, color = group_var, group = group_var)) + # Add points
     geom_path(aes(x = x, y = y, color = group_var, group = group_var)) + # Add paths
+    scale_size(range = c(0.01, 5)) +
     scale_color_distiller(palette = "RdBu", na.value = "black") + # Use RdBu color scale
     labs(
       title = paste("Phase lines,", input),  # Title with input type
       x = "Bin",  # x-axis label
       y = "Change Rate",  # y-axis label
-      color = "Cut"  # Legend label for color
+      color = "Cut",  # Legend label for color
+      size = "log(N+1)"
     ) +
     facet_grid(condition ~ facet, scales = "free") + # Separate panels by condition and facet
     theme_classic(base_size = 12) + # Classic theme
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) # Rotate x-axis text
 
   # Add optional x-axis limits
-  if (!is.null(min_x) && !is.null(max_x)) {
+  if (!is.null(min_x) && !is.null(max_x) && !any(is.na(c(min_x, max_x)))) {
     plot <- plot + scale_x_continuous(limits = c(min_x, max_x))
   }
 
-  # Add optional y-axis limits
-  if (!is.null(min_y) && !is.null(max_y)) {
+  if (!is.null(min_y) && !is.null(max_y) && !any(is.na(c(min_y, max_y)))) {
     plot <- plot + scale_y_continuous(limits = c(min_y, max_y))
   }
 
   # Optionally save plot as PDF
   if (save) {
     ggsave(
-      filename = paste0("phase_line_", input, "_", unique(df$x_variable), "_", unique(df$y_variable), ".pdf"),
+      filename = paste0("phase_line_",
+                        df$x_variable[1], "_", df$y_variable[1], "_", input,  ".pdf"),
       plot = plot,
       height = 4, width = 6
     )

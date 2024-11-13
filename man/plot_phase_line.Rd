@@ -4,6 +4,18 @@
 \alias{plot_phase_line}
 \title{Plot Phase Lines in Phase Space
 This function generates a plot of phase lines in phase space, showing changes in \code{x} and \code{y} values (change rate) along with the grouping variable. It supports both standard and fraction-based input types and provides options to adjust axis limits, customize the plot's color scale, and save the plot as a PDF.}
+\usage{
+plot_phase_line(
+  df,
+  input = "standard",
+  min_x = NULL,
+  max_x = NULL,
+  min_y = NULL,
+  max_y = NULL,
+  save = FALSE,
+  fix_coord = FALSE
+)
+}
 \arguments{
 \item{df}{A data frame containing columns \code{x}, \code{y}, \code{n}, \code{group_var}, \code{condition}, \code{facet}, \code{x_variable}, and \code{y_variable}.}
 

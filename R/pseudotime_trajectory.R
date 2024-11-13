@@ -22,10 +22,9 @@
 #' @examples
 #' # Example usage:
 #' pseudotime_trajectory(df)
+#' @import data.table
+#' @import dplyr
 #' @export
-library(data.table)
-library(dplyr)
-
 pseudotime_trajectory <- function(df, input = "standard", save = FALSE){
 
   # Validate input parameters
@@ -40,57 +39,49 @@ pseudotime_trajectory <- function(df, input = "standard", save = FALSE){
     stop("The following required columns are missing in df: ", paste(missing_columns, collapse = ", "))
   }
 
+  setDT(df)  # Ensure data.table format
+
   # Define labels for x and y based on input type
   if (input == "standard") {
-    pseudotime_trajectory <- df %>%
-      mutate(
-        x_label = x_variable,           # Standard label for `x`
-        y_label = y_variable            # Standard label for `y`
-      ) %>%
-      group_by(
-        condition,
-        pseudotime,
-        x_label,
-        y_label
-      ) %>%
-      summarize(
-        x1 = quantile(x, 0.25),
-        y1 = quantile(y, 0.25),
-        x3 = quantile(x, 0.75),
-        y3 = quantile(y, 0.75),
-        x = median(x),
-        y = median(y),
-        n = n(),
-        input = input
-      ) %>%
-      as.data.table()
+    # Group by necessary variables
+    pseudotime_trajectory <- df[, .(
+      x1 = quantile(x, 0.25),             # 25th percentile of x
+      y1 = quantile(y, 0.25),             # 25th percentile of y
+      x3 = quantile(x, 0.75),             # 75th percentile of x
+      y3 = quantile(y, 0.75),             # 75th percentile of y
+      x = median(x),                      # Median of x
+      y = median(y),                      # Median of y
+      n = .N                              # Count of rows per group
+    ), by = .(condition, pseudotime, x_variable, y_variable, x_label, y_label)]  # Include all relevant labels in grouping
+
   } else {
-    pseudotime_trajectory <- df %>%
-      group_by(
-        condition,
-        pseudotime
+    pseudotime_trajectory <-
+      df %>%
+      mutate(
+        # Labels for fractional x and cumulative y
+        x_label = paste0(x_variable, " pct"),
+        y_label = paste0(x_variable, " + ", y_variable)
       ) %>%
+      rowwise() %>%
       mutate(
         y = x + y,                     # Set `y` as the total size
-        x = x / y,                     # Calculate `x` as a fraction of the size
-        x_label = paste0(x_variable, " pct"),      # Label for fractional `x`
-        y_label = paste0(x_variable, " + ", y_variable)  # Label for size-based `y`
+        x = x / y                      # Calculate `x` as a fraction of the total size
+      ) %>%
+      ungroup() %>%
+      mutate(
+        y = y/2
       ) %>%
       group_by(
-        condition,
-        pseudotime,
-        x_label,
-        y_label
+        condition, pseudotime, x_variable, y_variable, x_label, y_label
       ) %>%
       summarize(
-        x1 = quantile(x, 0.25),
-        y1 = quantile(y, 0.25),
-        x3 = quantile(x, 0.75),
-        y3 = quantile(y, 0.75),
-        x = median(x),
-        y = median(y),
-        n = n(),
-        input = input
+        x1 = quantile(x, 0.25),    # 25th percentile of transformed x
+        y1 = quantile(y, 0.25),    # 25th percentile of transformed y
+        x3 = quantile(x, 0.75),    # 75th percentile of transformed x
+        y3 = quantile(y, 0.75),    # 75th percentile of transformed y
+        x = median(x),      # Median of transformed x
+        y = median(y),      # Median of transformed y
+        n = n()                                # Count of rows per group
       ) %>%
       as.data.table()
   }
@@ -99,7 +90,7 @@ pseudotime_trajectory <- function(df, input = "standard", save = FALSE){
   if (save) {
     fwrite(
       pseudotime_trajectory,
-      paste0("pseudotime_trajectory_", input, ".csv")
+      paste0("pseudotime_trajectory", ifelse(input == "standard", "", paste0("_", input)), ".csv.gz")
     )
   }
 

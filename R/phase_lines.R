@@ -2,7 +2,7 @@
 #' @title Generate Phase Lines for Visualization (Binned, Averaged, or all)
 #' This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using `x` and `y` variables or their fractional representations. The result can be used to create phase line plots with separate facets for `dx` or `dy`, with flexibility to filter based on a minimum number of observations per bin.
 #' @param df A data frame containing columns: `x`, `y`, `dx`, `dy`, `x_variable`, `y_variable`, `x_label`, `y_label`, `dx_label`, `dy_label`
-#' @param n_bins Integer specifying the number of bins to discretize `x` and `y`. Default is 4.
+#' @param bin_width Integer specifying the number of bins to discretize `x` and `y`. Default is 4.
 #' @param min_bin_n Integer specifying the minimum number of observations required in each bin.
 #' @param input Character string specifying "standard" for direct values or "fraction" for fractional representation.
 #' @param output Character string specifying output type: "binned", "average", or "all".
@@ -10,15 +10,13 @@
 #'
 #' @examples
 #' # Example usage
-#' phase_lines(df, n_bins = 5, min_bin_n = 2, input = "standard", output = "all")
+#' phase_lines(df, bin_width = 5, min_bin_n = 2, input = "standard", output = "all")
 #' @export
-library(data.table)
-library(dplyr)
-library(tidyr)
+#' @import data.table
+#' @import dplyr
+phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard", output = "all", save = FALSE) {
 
-phase_lines <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", output = "all", save = FALSE) {
-
-  # Validate `input` and `output` parameters to ensure they contain valid values
+  # Validate input and output parameters
   if (!input %in% c("standard", "fraction")) {
     stop("Invalid input: Choose 'standard' or 'fraction'")
   }
@@ -26,64 +24,55 @@ phase_lines <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", outpu
     stop("Invalid output type: Choose 'binned', 'average', or 'all'")
   }
 
-  # Adjust binning parameter by reducing `n_bins` by 1 to use zero-based rounding
-  n_bins <- n_bins - 1
+  # Adjust binning parameter
+  bin_width <- 1 / bin_width
+  setDT(df)
 
   # Generate binned data if "binned" or "all" output is selected
   if (output %in% c("binned", "all")) {
-    binned_df <- bind_rows(
-      # Each mutate statement prepares a set of phase lines with specific x/y and dx/dy combinations
-      df %>% mutate(bin = x, delta = dx, facet = paste(x_label, dx_label), group_var = y),
-      df %>% mutate(bin = x, delta = dy, facet = paste(x_label, dy_label), group_var = y),
-      df %>% mutate(bin = y, delta = dx, facet = paste(y_label, dx_label), group_var = x),
-      df %>% mutate(bin = y, delta = dy, facet = paste(y_label, dy_label), group_var = x)
-    ) %>%
-      # Remove original columns that are no longer needed
-      select(-c(x, y, dx, dy, dx_label, dy_label)) %>%
-      # Mark the output type as "binned"
-      mutate(output_type = "binned") %>%
-      # Remove rows with any missing values
-      drop_na() %>%
-      rename(
-        x = bin,
-        y = delta
-      ) %>%
-      as.data.table() # Convert to data.table format
+    binned_df <- rbindlist(list(
+      df[, .(bin = x, delta = dx, facet = paste(x_label, dx_label), group_var = -y,
+             x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(x)],
+      df[, .(bin = x, delta = dy, facet = paste(x_label, dy_label), group_var = -y,
+             x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(x)],
+      df[, .(bin = y, delta = dx, facet = paste(y_label, dx_label), group_var = x,
+             x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(y)],
+      df[, .(bin = y, delta = dy, facet = paste(y_label, dy_label), group_var = x,
+             x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(y)]
+    ), fill = TRUE)
+
+    # Remove original x and y columns to avoid duplicates during renaming
+    binned_df$x <- NULL
+    binned_df$y <- NULL
+
+    binned_df <- binned_df %>% rename(x = bin, y = delta)
+    binned_df[, output_type := "binned"]
   }
 
   # Generate averaged data if "average" or "all" output is selected
   if (output %in% c("average", "all")) {
-    # Calculate median dx and dy within groups for `x`
-    phase_x <- df %>%
-      drop_na() %>%
-      group_by(input, condition, x_variable, y_variable, x, x_label, y_label, dx_label, dy_label) %>%
-      summarize(dx = median(dx), dy = median(dy), n = n(), .groups = "drop") %>%
-      filter(n >= min_bin_n) # Filter groups with fewer than min_bin_n observations
+    phase_x <- df[complete.cases(df), .(
+      dx = median(dx, na.rm = TRUE),
+      dy = median(dy, na.rm = TRUE),
+      n = .N
+    ), by = .(input, condition, x_variable, y_variable, x, x_label, y_label, dx_label, dy_label)][n >= min_bin_n]
 
-    # Calculate median dx and dy within groups for `y`
-    phase_y <- df %>%
-      drop_na() %>%
-      group_by(input, condition, x_variable, y_variable, y, x_label, y_label, dx_label, dy_label) %>%
-      summarize(dx = median(dx), dy = median(dy), n = n(), .groups = "drop") %>%
-      filter(n >= min_bin_n)
+    phase_y <- df[complete.cases(df), .(
+      dx = median(dx, na.rm = TRUE),
+      dy = median(dy, na.rm = TRUE),
+      n = .N
+    ), by = .(input, condition, x_variable, y_variable, y, x_label, y_label, dx_label, dy_label)][n >= min_bin_n]
 
-    # Bind the different phase lines into one data frame for averaged output
-    avg_df <- bind_rows(
-      phase_x %>% mutate(facet = paste(x_label, dy_label), bin = x, delta = dy, output_type = "average"),
-      phase_x %>% mutate(facet = paste(x_label, dx_label), bin = x, delta = dx, output_type = "average"),
-      phase_y %>% mutate(facet = paste(y_label, dx_label), bin = y, delta = dx, output_type = "average"),
-      phase_y %>% mutate(facet = paste(y_label, dy_label), bin = y, delta = dy, output_type = "average")
-    ) %>%
-      # Remove original columns that are no longer needed
-      select(-c(x, y, dx, dy, dx_label, dy_label)) %>%
-      # Mark the output type as "average"
-      mutate(output_type = "average") %>%
-      rename(
-        x = bin,
-        y = delta
-      ) %>%
-      drop_na() %>%
-      as.data.table() # Convert to data.table format
+    avg_df <- rbindlist(list(
+      phase_x[, .(facet = paste(x_label, dy_label), bin = x, delta = dy, output_type = "average",
+                  condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
+      phase_x[, .(facet = paste(x_label, dx_label), bin = x, delta = dx, output_type = "average",
+                  condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
+      phase_y[, .(facet = paste(y_label, dx_label), bin = y, delta = dx, output_type = "average",
+                  condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
+      phase_y[, .(facet = paste(y_label, dy_label), bin = y, delta = dy, output_type = "average",
+                  condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)]
+    ), fill = TRUE) %>% rename(x = bin, y = delta)
   }
 
   # Combine binned and average data frames if all are selected
@@ -94,15 +83,12 @@ phase_lines <- function(df, n_bins = 4, min_bin_n = 1, input = "standard", outpu
   } else {
     avg_df
   }
-
-  if(save == TRUE){
+  phase_lines_dt$input <- input
+  if (save) {
     fwrite(
       phase_lines_dt,
-      paste0("phase_lines ",
-             ifelse(input=="standard", "", input),
-             " n_bins", n_bins,
-             ".csv")
+      paste0("phase_lines_", ifelse(input == "standard", "", paste0("_", input)), "_bin_width_", bin_width, ".csv.gz")
     )
   }
-  return(phase_lines_dt)
+return(phase_lines_dt)
 }

@@ -4,6 +4,15 @@
 \alias{phase_portrait}
 \title{Generate Phase Portrait Summary (Standard or Fraction-Based)
 This function generates a phase portrait by binning \code{x} and \code{y} variables into discrete intervals and calculating the median rate of change (\code{dx} and \code{dy}) within each bin. It can be used to visualize the dynamics of two variables over binned states, either as a standard portrait or as a fraction-based portrait where \code{x} values are represented as fractions of the sum \code{(x + y)}.}
+\usage{
+phase_portrait(
+  df,
+  bin_width = 0.25,
+  min_bin_n = 1,
+  input = "standard",
+  save = FALSE
+)
+}
 \arguments{
 \item{df}{A data frame containing the following columns:
 \itemize{
@@ -15,7 +24,7 @@ This function generates a phase portrait by binning \code{x} and \code{y} variab
 \item \code{x_variable}, \code{y_variable}: Character or factor columns identifying the variables.
 }}
 
-\item{n_bins}{Integer specifying the number of bins to discretize \code{x} and \code{y} variables. Default is 4.}
+\item{bin_width}{Integer specifying the number of bins to discretize \code{x} and \code{y} variables. Default is 4.}
 
 \item{min_bin_n}{Integer specifying the minimum number of observations required in each bin for it to be included in the output. Default is 1.}
 
@@ -39,6 +48,6 @@ This function generates a phase portrait by binning \code{x} and \code{y} variab
 }
 \examples{
 # Example usage
-phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "standard")
-phase_portrait(df, n_bins = 5, min_bin_n = 2, input = "fraction")
+phase_portrait(df, bin_width = 5, min_bin_n = 2, input = "standard")
+phase_portrait(df, bin_width = 5, min_bin_n = 2, input = "fraction")
 }

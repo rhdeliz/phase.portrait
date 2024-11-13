@@ -9,3 +9,14 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Imports: 
+    data.table,
+    metR,
+    dplyr,
+    tidyr,
+    viridis,
+    ggplot2,
+    parallel,
+    gridExtra,
+    deSolve,
+    Cairo

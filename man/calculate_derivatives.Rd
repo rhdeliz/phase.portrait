@@ -4,14 +4,6 @@
 \alias{calculate_derivatives}
 \title{Calculate Rate of Change (Delta) in Values Over Time
 This function calculates the rate of change (delta) in the \code{value} column over \code{pseudotime}. The calculation method can be specified as lead, lag, or lead-lag.}
-\usage{
-calculate_derivatives(
-  df,
-  derivative = "lead",
-  delta_name = "delta",
-  save = FALSE
-)
-}
 \arguments{
 \item{df}{A data frame with \code{value}, \code{pseudotime}, \code{sample}, \code{condition}, and \code{variable} columns.}
 

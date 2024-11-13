@@ -13,45 +13,89 @@
 #' @examples
 #' # Example usage:
 #' # plots <- iterate_plotting(df, fx = plot_phase_portrait, input = "standard", fixed_axes = TRUE)
-#'#' @export
-iterate_plotting <- function(df, fx, input = "standard", fixed_axes = TRUE, save = FALSE, ...) {
+#' @export
+#' @import data.table
+#' @import dplyr
+#' @import parallel
+library(data.table)
+library(dplyr)
+library(parallel)
+
+iterate_plotting <- function(df, fx, input = "standard", fixed_axes = TRUE, save = FALSE, n_cores = NULL, ...) {
+  # Capture additional arguments
+  extra_args <- list(...)
+
   # Override 'input' with df$input[1] if 'input' column exists in df
   if ("input" %in% names(df)) {
     input <- df$input[1]
   }
 
-  # Calculate global axis limits based on entire dataset
-  limits_df <- df %>%
-    ungroup() %>%
-    summarise(
-      min_x = min(x, na.rm = TRUE),
-      max_x = max(x, na.rm = TRUE),
-      min_y = min(y, na.rm = TRUE),
-      max_y = max(y, na.rm = TRUE)
-    )
+  # Set the number of cores to use
+  if (is.null(n_cores)) {
+    n_cores <- max(1, detectCores() - 2)
+  }
 
-  # Extract additional arguments from `...`
-  extra_args <- list(...)
+  if (.Platform$OS.type == "windows") {
+    cl <- tryCatch({
+      suppressWarnings(makeCluster(n_cores))
+    }, warning = function(w) {
+      invokeRestart("muffleWarning")
+    }, error = function(e) {
+      stop("Error in creating cluster: ", e$message)
+    })
+    on.exit(stopCluster(cl))
+    clusterEvalQ(cl, {
+      library(dplyr)
+      library(data.table)
+    })
+  }
+
+  limits_df <- df[, .(min_x = min(x[is.finite(x)], na.rm = TRUE),
+                      max_x = max(x[is.finite(x)], na.rm = TRUE),
+                      min_y = min(y[is.finite(y)], na.rm = TRUE),
+                      max_y = max(y[is.finite(y)], na.rm = TRUE))]
 
   # Split the data by x_label and y_label
   split_pp <- df %>% group_split(x_label, y_label)
 
-  # Call the plotting function, passing all additional arguments with ...
-  plots <- lapply(split_pp, function(df_split) {
+  plot_fx <- function(df_split, extra_args) {
+    # Basic arguments for fx
     args <- list(
-      df_split,
+      df = df_split,  # Corrected argument name
       input = input,
       save = save
     )
 
-    # Conditionally add limits based on fixed_axes and availability in extra_args
-    if (fixed_axes || !is.null(extra_args$min_x)) args$min_x <- ifelse(!is.null(extra_args$min_x), extra_args$min_x, limits_df$min_x)
-    if (fixed_axes || !is.null(extra_args$max_x)) args$max_x <- ifelse(!is.null(extra_args$max_x), extra_args$max_x, limits_df$max_x)
-    if (fixed_axes || !is.null(extra_args$min_y)) args$min_y <- ifelse(!is.null(extra_args$min_y), extra_args$min_y, limits_df$min_y)
-    if (fixed_axes || !is.null(extra_args$max_y)) args$max_y <- ifelse(!is.null(extra_args$max_y), extra_args$max_y, limits_df$max_y)
+    extra_args <- extra_args[!names(extra_args) %in% c("min_x", "max_x", "min_y", "max_y")]
 
+    # Conditionally add axis limits based on fixed_axes and availability in extra_args
+    if (fixed_axes) {
+      args$min_x <- limits_df$min_x
+      args$max_x <- limits_df$max_x
+      args$min_y <- limits_df$min_y
+      args$max_y <- limits_df$max_y
+    }
+    # Remove NULL values from args
+    args <- args[!sapply(args, is.null)]
+
+    # Include any extra arguments not already in args
+    extra_args_to_add <- extra_args[setdiff(names(extra_args), names(args))]
+    args <- c(args, extra_args_to_add)
+
+    # Call the plotting function with the combined arguments
     do.call(fx, args)
-  })
+  }
+
+  if (.Platform$OS.type == "windows") {
+    # Export necessary objects to the cluster
+    clusterExport(cl, varlist = c("plot_fx", "fx", "input", "save", "fixed_axes", "limits_df", "extra_args"), envir = environment())
+
+    plots <- parLapply(cl, split_pp, plot_fx, extra_args)
+  } else if (n_cores == 1) {
+    plots <- lapply(split_pp, plot_fx, extra_args)
+  } else {
+    plots <- mclapply(split_pp, plot_fx, extra_args, mc.cores = n_cores)
+  }
 
   return(plots)
 }

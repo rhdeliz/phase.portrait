@@ -21,6 +21,8 @@
 #' calculate_derivatives(df, derivative = "lead-lag", delta_name = "rate_change")
 #'
 #' @export
+#' @import data.table
+library(data.table)
 calculate_derivatives <- function(df, derivative = "lead", delta_name = "delta", save = FALSE) {
   # Check for valid derivative method
   if (!derivative %in% c("lead", "lag", "lead-lag")) {
@@ -28,26 +30,22 @@ calculate_derivatives <- function(df, derivative = "lead", delta_name = "delta",
   }
 
   # Arrange and group data by specified columns
-  df <- df %>%
-    arrange(pseudotime) %>%
-    group_by(condition, sample, variable)
+  setDT(df)
+  df <- df[order(pseudotime), .SD, by = .(condition, sample, variable)]
 
   # Calculate delta based on the chosen derivative method
   if (derivative == "lead") {
-    df <- df %>% mutate(!!delta_name := (lead(value) - value) / (lead(pseudotime) - pseudotime))
+    df[, (delta_name) := (shift(value, type = "lead") - value) / (shift(pseudotime, type = "lead") - pseudotime)]
   } else if (derivative == "lag") {
-    df <- df %>% mutate(!!delta_name := (value - lag(value)) / (pseudotime - lag(pseudotime)))
+    df[, (delta_name) := (shift(value, type = "lag") - value) / (shift(pseudotime, type = "lag") - pseudotime)]
   } else if (derivative == "lead-lag") {
-    df <- df %>% mutate(!!delta_name := (lead(value) - lag(value)) / (lead(pseudotime) - lag(pseudotime)))
+    df[, (delta_name) := (shift(value, type = "lead") - shift(value, type = "lag")) /
+         (shift(pseudotime, type = "lead") - shift(pseudotime, type = "lag"))]
   }
-
-  # Convert to data.table for faster processing
-  df <- as.data.table(df)
 
   # Optionally save the data
   if (save) {
-    fwrite(df, paste0("data_with_", delta_name, ".csv"))
+    fwrite(df, paste0("delta_", delta_name, ".csv.gz"))
   }
-
   return(df)
 }

@@ -33,12 +33,11 @@
 #' plot_trajectory(df, min_x = 0, max_x = 5, min_y = 0, max_y = 5)
 #'
 #' @export
-
-library(ggplot2)
-library(dplyr)
-library(viridis)
-
-plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL, min_y = NULL, max_y = NULL, save = FALSE){
+#' @import data.table
+#' @import ggplot2
+#' @import viridis
+plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL,
+                            min_y = NULL, max_y = NULL, save = FALSE, fix_coord = FALSE){
 
   # Override 'input' with df$input[1] if 'input' column exists in df
   if("input" %in% names(df)) {
@@ -56,16 +55,14 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL, 
     aes(x = x, y = y, color = pseudotime)
   ) +
     # Segment from x1 to x, and from x to x3 to represent directional flow in x
-    geom_segment(aes(x = x1, xend = x, y = y, yend = y), size = .25) +
-    geom_segment(aes(x = x, xend = x3, y = y, yend = y), size = .25) +
+    geom_segment(aes(x = x1, xend = x3, y = y), size = .25) +
 
     # Segment from y1 to y, and from y to y3 to represent directional flow in y
-    geom_segment(aes(x = x, xend = x, y = y1, yend = y), size = .25) +
-    geom_segment(aes(x = x, xend = x, y = y, yend = y3), size = .25) +
+    geom_segment(aes(x = x, y = y1, yend = y3), size = .25) +
 
     # Draw path and point layers to trace and emphasize trajectory points
-    geom_path(size = 2) +
-    geom_point(size = 3) +
+    geom_path() +
+    geom_point(size = 0.1) +
 
     # Use the 'plasma' color palette from viridis for pseudotime progression
     scale_color_viridis(option = "plasma") +
@@ -76,11 +73,10 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL, 
     # Add plot title and axis labels based on df's columns
     labs(
       title = paste("Pseudotime in phase space,", input),       # Title with selected input label
-      x = df$x_variable[1],                                      # Dynamic x-axis label
-      y = df$y_variable[1],                                      # Dynamic y-axis label
+      x = df$x_label[1],                                      # Dynamic x-axis label
+      y = df$y_label[1],                                      # Dynamic y-axis label
       color = "Pseudotime"                                       # Legend title for pseudotime
     ) +
-
     # Apply a clean, classic theme
     theme_classic(base_size = 12) +
     theme(
@@ -89,8 +85,7 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL, 
       axis.text.x = element_text(angle = 45, vjust = 1, hjust=1) # Rotate x-axis labels
     )
 
-  # Enforce fixed aspect ratio if input is not "fraction"
-  if(input != "fraction") {
+  if(input == "standard" || fix_coord){
     plot <- plot + coord_fixed()
   }
 
@@ -105,7 +100,8 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL, 
   # Optionally save plot as a PDF file with dynamic filename based on df's labels
   if(save == TRUE){
     ggsave(
-      filename = paste0("trajectory_", input, "_", df$x_variable[1], "_", df$y_variable[1], ".pdf"),
+      filename = paste0("trajectory_",
+                        df$x_variable[1], "_", df$y_variable[1], "_", input,  ".pdf"),
       plot = plot,
       height = 4, width = 6
     )

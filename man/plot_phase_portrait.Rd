@@ -8,11 +8,13 @@ This function generates a phase portrait plot, visualizing the dynamics of two v
 plot_phase_portrait(
   df,
   input = "standard",
+  bin_width = 0.25,
   min_x = NULL,
   max_x = NULL,
   min_y = NULL,
   max_y = NULL,
-  save = FALSE
+  save = FALSE,
+  fix_coord = FALSE
 )
 }
 \arguments{

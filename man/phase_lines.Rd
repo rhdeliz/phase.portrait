@@ -4,10 +4,20 @@
 \alias{phase_lines}
 \title{Generate Phase Lines for Visualization (Binned, Averaged, or all)
 This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using \code{x} and \code{y} variables or their fractional representations. The result can be used to create phase line plots with separate facets for \code{dx} or \code{dy}, with flexibility to filter based on a minimum number of observations per bin.}
+\usage{
+phase_lines(
+  df,
+  bin_width = 0.25,
+  min_bin_n = 1,
+  input = "standard",
+  output = "all",
+  save = FALSE
+)
+}
 \arguments{
 \item{df}{A data frame containing columns: \code{x}, \code{y}, \code{dx}, \code{dy}, \code{x_variable}, \code{y_variable}, \code{x_label}, \code{y_label}, \code{dx_label}, \code{dy_label}}
 
-\item{n_bins}{Integer specifying the number of bins to discretize \code{x} and \code{y}. Default is 4.}
+\item{bin_width}{Integer specifying the number of bins to discretize \code{x} and \code{y}. Default is 4.}
 
 \item{min_bin_n}{Integer specifying the minimum number of observations required in each bin.}
 
@@ -24,5 +34,5 @@ This function generates a data frame for visualizing phase lines by creating eit
 }
 \examples{
 # Example usage
-phase_lines(df, n_bins = 5, min_bin_n = 2, input = "standard", output = "all")
+phase_lines(df, bin_width = 5, min_bin_n = 2, input = "standard", output = "all")
 }

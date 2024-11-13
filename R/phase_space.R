@@ -33,9 +33,9 @@
 #' phase_space(df)
 #'
 #' @export
-library(dplyr)
-library(data.table)
-library(parallel)
+#' @import data.table
+#' @import dplyr
+#' @import parallel
 phase_space <- function(df, n_cores = NULL, save = FALSE) {
 
   # Set the number of cores to use
@@ -87,11 +87,13 @@ phase_space <- function(df, n_cores = NULL, save = FALSE) {
 
     ref_table <- split_table[[x_table]] %>%
       rename(x = value, dx = delta, x_variable = variable)
+    setDT(ref_table)
 
     qry_table <- split_table[[y_table]] %>%
       rename(y = value, dy = delta, y_variable = variable)
+    setDT(qry_table)
 
-    phase_space <- merge(ref_table, qry_table, by = c("condition", "sample", "pseudotime"))
+    phase_space <- merge.data.table(ref_table, qry_table, by = c("condition", "sample", "pseudotime"))
 
     return(phase_space)
   }
@@ -99,23 +101,22 @@ phase_space <- function(df, n_cores = NULL, save = FALSE) {
   # Apply phase portrait analysis in parallel
   if (.Platform$OS.type == "windows") {
     df_phase_space <- parLapply(cl, 1:NROW(combinations), phase_portrait_analysis)
+  }
+  if(n_cores == 1){
+    df_phase_space <- lapply(1:NROW(combinations), phase_portrait_analysis)
   } else{
     df_phase_space <- mclapply(1:NROW(combinations), phase_portrait_analysis, mc.cores = n_cores)
   }
 
-  df_phase_space <-
-    rbindlist(df_phase_space) %>%
-    mutate(
-      x_label = x_variable,
-      y_label = y_variable
-    ) %>%
-    as.data.table()
+  df_phase_space <- rbindlist(df_phase_space)
+  df_phase_space[, `:=`(x_label = x_variable, y_label = y_variable)]
 
   if(save == TRUE){
     fwrite(
       df_phase_space,
-      "phase_space.csv"
+      "phase_space.csv.gz"
     )
   }
+
   return(df_phase_space)
 }

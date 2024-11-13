@@ -8,12 +8,14 @@ This function creates a phase streamline plot, visualizing the dynamics of two v
 plot_stream(
   df,
   input = "standard",
-  n_bins = 4,
+  bin_width = 0.25,
   min_x = NULL,
   max_x = NULL,
   min_y = NULL,
   max_y = NULL,
-  save = FALSE
+  save = FALSE,
+  fix_coord = FALSE,
+  res = 25
 )
 }
 \arguments{
@@ -21,7 +23,7 @@ plot_stream(
 
 \item{input}{A character string indicating the type of input, either \code{"standard"} or \code{"fraction"}. Default is \code{"standard"}.}
 
-\item{n_bins}{Integer specifying the number of bins for discretizing \code{x} and \code{y}. Default is 4.}
+\item{bin_width}{Integer specifying the number of bins for discretizing \code{x} and \code{y}. Default is 0.25.}
 
 \item{min_x}{Numeric. Minimum x-axis limit for the plot. Default is NULL.}
 
@@ -41,5 +43,5 @@ Plot Phase Streamline
 This function creates a phase streamline plot, visualizing the dynamics of two variables (\code{x} and \code{y}) across conditions. It supports both standard and fraction-based input types, with options for binning, custom axis limits, fixed aspect ratio, and saving the plot.
 }
 \examples{
-plot_stream(df, input = "standard", n_bins = 4, min_x = 0, max_x = 1, min_y = 0, max_y = 1, save = TRUE)
+plot_stream(df, input = "standard", bin_width = 4, min_x = 0, max_x = 1, min_y = 0, max_y = 1, save = TRUE)
 }

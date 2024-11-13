@@ -12,12 +12,17 @@
 #' @examples
 #' plot_all_trajectories(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
 #' @export
+#' @import data.table
+#' @import dplyr
+#' @import ggplot2
+#' @import viridis
 library(ggplot2)
 library(viridis)
 library(dplyr)
 library(data.table)
 
-plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = NULL, min_y = NULL, max_y = NULL, save = FALSE){
+plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = NULL,
+                                  min_y = NULL, max_y = NULL, save = FALSE, fix_coord = FALSE){
 
   # Override 'input' with df$input[1] if 'input' column exists in df
   if("input" %in% names(df)) {
@@ -41,6 +46,9 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
         x = x / y                      # Calculate `x` as a fraction of the total size
       ) %>%
       ungroup() %>%
+      mutate(
+        y = y/2
+      ) %>%
       as.data.table()
 
     # Labels for fractional x and cumulative y
@@ -50,8 +58,7 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
 
   # Initialize the plot with point and path layers, using pseudotime as color scale
   plot <- ggplot(df, aes(x = x, y = y, color = pseudotime, group = sample)) +
-    geom_point(size = 2) +                               # Add points for each sample
-    geom_path(linewidth = 0.25) +                             # Connect points with lines
+    geom_path(linewidth = 0.1) +                             # Connect points with lines
     scale_color_viridis(option = "plasma") +             # Color scale for pseudotime
     facet_grid(~condition) +                             # Separate plot panels by condition
     labs(
@@ -67,6 +74,9 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis text for readability
     )
 
+  if(input == "standard" || fix_coord){
+    plot <- plot + coord_fixed()
+  }
   # Apply optional x-axis limits
   if(!is.null(min_x) && !is.null(max_x)) {
     plot <- plot + scale_x_continuous(limits = c(min_x, max_x))
@@ -77,15 +87,11 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
     plot <- plot + scale_y_continuous(limits = c(min_y, max_y))
   }
 
-  # Enforce a fixed aspect ratio for non-fractional input to ensure shape consistency
-  if (input != "fraction") {
-    plot <- plot + coord_fixed()
-  }
-
   # Optionally save the plot as a PDF file with a filename based on the input type and variable names
   if (save) {
     ggsave(
-      filename = paste0("all_trajectories_", input, "_", unique(df$x_variable), "_", unique(df$y_variable), ".pdf"),
+      filename = paste0("all_trajectories_",
+                        df$x_variable[1], "_", df$y_variable[1], "_", input,  ".pdf"),
       plot = plot,
       height = 4, width = 6
     )

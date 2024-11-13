@@ -4,6 +4,18 @@
 \alias{plot_trajectory}
 \title{Plot Trajectory in Phase Space
 This function creates a phase space trajectory plot, visualizing \code{x} and \code{y} values along pseudotime. It connects \code{x1} to \code{x} and \code{x} to \code{x3} as well as \code{y1} to \code{y} and \code{y} to \code{y3}, representing directional flows with arrows. This enables a clear depiction of how each point in phase space progresses over time.}
+\usage{
+plot_trajectory(
+  df,
+  input = "standard",
+  min_x = NULL,
+  max_x = NULL,
+  min_y = NULL,
+  max_y = NULL,
+  save = FALSE,
+  fix_coord = FALSE
+)
+}
 \arguments{
 \item{df}{A dataframe containing columns for coordinates (\code{x}, \code{y}), pseudotime,
 and directional endpoints (\code{x1}, \code{x3}, \code{y1}, \code{y3}). Optionally includes

@@ -10,30 +10,27 @@
 #' @examples
 #' df <- data.frame(value = c(1, 2, 3, 4, 5), variable = "var1")
 #' normalize_values(df, normalization = "min-max")
-#'#' @export
-library(dplyr)
-library(data.table)
-library(parallel)
+#' @export
+#' @import data.table
 normalize_values <- function(df, normalization = "max", save = FALSE) {
+
   # Check for valid normalization method
   if (!normalization %in% c("max", "min-max")) {
     stop("Normalization method does not exist. Choose either 'max' or 'min-max'.")
   }
-
+  setDT(df)
   # Normalize values based on the chosen method
-  df <- df %>% group_by(variable)
-
+  setorder(df, pseudotime)
   if (normalization == "max") {
-    df <- df %>% mutate(value = value / max(abs(value), na.rm = TRUE))
+    df[, value := value / max(abs(value), na.rm = TRUE)]
   } else if (normalization == "min-max") {
-    df <- df %>% mutate(value = (value - min(value, na.rm = TRUE)) / max(value, na.rm = TRUE))
+    df[, value := (value - min(value, na.rm = TRUE)) / (max(value, na.rm = TRUE) - min(value, na.rm = TRUE))]
   }
-  df <- as.data.table(df)
 
-  if (save) {
-    fwrite(
-      df,
-      paste0("normalized_values_method_", normalization, ".csv")
+  if(save){
+    frwite(
+      df_phase_space,
+      paste0("normalized_", normalization, ".csv.gz")
     )
   }
   return(df)
