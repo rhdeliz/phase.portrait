@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_phase_portrait.R
 \name{plot_phase_portrait}
 \alias{plot_phase_portrait}
-\title{Plot Phase Portrait
-This function generates a phase portrait plot, visualizing the dynamics of two variables (\code{x} and \code{y}) with arrows representing the rate of change (\code{dx} and \code{dy}). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.}
+\title{Plot Phase Portrait}
 \usage{
 plot_phase_portrait(
   df,
@@ -22,6 +21,8 @@ plot_phase_portrait(
 
 \item{input}{A character string indicating the type of input. Defaults to \code{"standard"}.}
 
+\item{bin_width}{Numeric. Adjusts the length of arrows. Default is 0.25.}
+
 \item{min_x}{Numeric. Minimum x-axis limit for the plot. Default is NULL.}
 
 \item{max_x}{Numeric. Maximum x-axis limit for the plot. Default is NULL.}
@@ -31,12 +32,13 @@ plot_phase_portrait(
 \item{max_y}{Numeric. Maximum y-axis limit for the plot. Default is NULL.}
 
 \item{save}{Logical, if TRUE saves the plot to a PDF file. Default is FALSE.}
+
+\item{fix_coord}{Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.}
 }
 \value{
 A ggplot object showing the phase portrait.
 }
 \description{
-Plot Phase Portrait
 This function generates a phase portrait plot, visualizing the dynamics of two variables (\code{x} and \code{y}) with arrows representing the rate of change (\code{dx} and \code{dy}). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
 }
 \examples{

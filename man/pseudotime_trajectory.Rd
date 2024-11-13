@@ -2,8 +2,7 @@
 % Please edit documentation in R/pseudotime_trajectory.R
 \name{pseudotime_trajectory}
 \alias{pseudotime_trajectory}
-\title{Calculate Pseudotime Trajectory Summary Statistics
-This function calculates summary statistics (median and quantiles) for \code{x} and \code{y} variables along a pseudotime trajectory within each condition. It groups data by \code{condition} and \code{pseudotime}, then computes the 25th and 75th percentiles, as well as the median, for each group. This can be used to analyze trends or patterns in \code{x} and \code{y} over pseudotime.}
+\title{Calculate Pseudotime Trajectory Summary Statistics}
 \usage{
 pseudotime_trajectory(df, input = "standard", save = FALSE)
 }
@@ -36,8 +35,7 @@ of \code{condition} and \code{pseudotime}. Columns in the returned data frame in
 }
 }
 \description{
-Calculate Pseudotime Trajectory Summary Statistics
-This function calculates summary statistics (median and quantiles) for \code{x} and \code{y} variables along a pseudotime trajectory within each condition. It groups data by \code{condition} and \code{pseudotime}, then computes the 25th and 75th percentiles, as well as the median, for each group. This can be used to analyze trends or patterns in \code{x} and \code{y} over pseudotime.
+This function calculates summary statistics (median and quantiles) for \code{x} and \code{y} variables along a pseudotime trajectory within each condition, computing the 25th and 75th percentiles, as well as the median for each group, to analyze trends in \code{x} and \code{y} over pseudotime.
 }
 \examples{
 # Example usage:

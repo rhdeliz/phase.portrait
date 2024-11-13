@@ -2,29 +2,32 @@
 % Please edit documentation in R/scale_and_diff.R
 \name{scale_and_diff}
 \alias{scale_and_diff}
-\title{Normalize Values and calculate derivatives
-This function normalizes a value column in a data frame using either max or min-max normalization.}
+\title{Normalize Values and Calculate Derivatives}
 \usage{
 scale_and_diff(df, save = FALSE)
 }
 \arguments{
-\item{df}{A data frame with a \code{value} column to be normalized.}
+\item{df}{A data frame with a \code{value} column to be normalized and a \code{variable} column for grouping.}
 
-\item{normalization}{A character string specifying the normalization method.
-Options are:
-\itemize{
-\item \code{"max"} (default): Scales \code{value} by dividing by the maximum absolute value.
-\item \code{"min-max"}: Scales \code{value} to a 0-1 range by subtracting the minimum and dividing by the maximum.
-}}
+\item{save}{Logical, if TRUE, saves the output as a compressed CSV file named "delta_lead.csv.gz". Default is FALSE.}
 }
 \value{
-A data frame with the normalized \code{value} column.
+A data frame with normalized \code{value} and calculated \code{delta} columns.
 }
 \description{
-Normalize Values and calculate derivatives
-This function normalizes a value column in a data frame using either max or min-max normalization.
+This function normalizes the \code{value} column within each group in a data frame and calculates the derivative (difference) between consecutive values. It first shifts values within each group to compute differences, then performs min-max normalization for consistency across groups. Optionally, results can be saved as a compressed CSV file.
 }
 \examples{
-df <- data.frame(value = c(1, 2, 3, 4, 5), variable = "var1")
-normalize_values(df, normalization = "min-max")
+# Create an example data frame for normalization and differentiation
+df <- data.frame(
+  value = c(1, 2, 3, 4, 5),
+  variable = "var1",
+  pseudotime = 1:5
+)
+
+# Apply normalization and differentiation
+normalized_df <- scale_and_diff(df)
+
+# Apply and save the output
+normalized_df <- scale_and_diff(df, save = TRUE)
 }

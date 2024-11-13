@@ -2,8 +2,7 @@
 % Please edit documentation in R/phase_space.R
 \name{phase_space}
 \alias{phase_space}
-\title{Generate Phase Space for Pairwise Variable Analysis with Parallel Processing
-This function calculates the phase space for all pairwise combinations of variables within a data frame. It computes phase portraits by pairing each variable's values and their derivatives, then merges them into a combined phase space data frame. Parallel processing is supported for improved performance.}
+\title{Generate Phase Space for Pairwise Variable Analysis with Parallel Processing}
 \usage{
 phase_space(df, n_cores = NULL, save = FALSE)
 }
@@ -20,6 +19,8 @@ phase_space(df, n_cores = NULL, save = FALSE)
 
 \item{n_cores}{Integer specifying the number of cores to use for parallel processing.
 If NULL, defaults to the total available cores minus two (if running on Unix). On Windows, \code{n_cores} is set to 1.}
+
+\item{save}{Logical, if TRUE, saves the output as a compressed CSV file. Default is FALSE.}
 }
 \value{
 A data frame containing phase space information with columns:
@@ -34,21 +35,22 @@ A data frame containing phase space information with columns:
 }
 }
 \description{
-Generate Phase Space for Pairwise Variable Analysis with Parallel Processing
 This function calculates the phase space for all pairwise combinations of variables within a data frame. It computes phase portraits by pairing each variable's values and their derivatives, then merges them into a combined phase space data frame. Parallel processing is supported for improved performance.
 }
 \examples{
-# Example data frame
+# Generate an example dataset for phase space analysis
 df <- data.frame(
-  value = runif(100),
-  delta = rnorm(100),
-  variable = rep(c("var1", "var2", "var3", "var4"), each = 25),
+  value = c(runif(50, min = 0, max = 10), runif(50, min = 0, max = 10)),
+  delta = c(rnorm(50, mean = 0.5), rnorm(50, mean = -0.5)),
+  variable = rep(c("var1", "var2"), each = 50),
   condition = rep("cond1", 100),
-  sample = rep(1:5, each = 20),
-  pseudotime = rep(1:20, 5)
+  sample = rep(1:10, each = 10),
+  pseudotime = rep(seq(1, 10, length.out = 10), 10)
 )
 
-# Generate phase space
-phase_space(df)
+# Generate phase space with default parameters
+results <- phase_space(df)
 
+# Generate phase space with parallel processing on 4 cores
+results <- phase_space(df, n_cores = 4)
 }

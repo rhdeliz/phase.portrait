@@ -45,26 +45,26 @@ Run Analysis and Generate Phase Portrait Plots
 This function performs an in-depth analysis on a dataset to produce various visualizations, including phase portraits, trajectory plots, and other dynamic plots in phase space. Users can specify different analysis options (standard or fraction-based), save individual or combined plot outputs, and control the granularity of binning and parallel processing.
 }
 \details{
-The \code{run_analysis} function is designed to process and visualize phase space data comprehensively, providing flexibility for standard and fraction-based representations of the data. The function offers several customizable options for binning, minimum observations per bin, and parallel processing. Users can select to save intermediary data tables, individual plots, or combined plots based on their analysis needs. The main components of this function include:
+The \code{run_analysis} function processes and visualizes phase space data comprehensively, offering flexibility for standard and fraction-based representations. Customizable options include binning, minimum observations per bin, and parallel processing. Users can save intermediary data tables, individual plots, or combined plots as needed. The main components of this function include:
 \itemize{
 \item \strong{Phase Space Calculation}: Calls \code{phase_space()} to compute the core phase space dataset, using parallel processing if specified.
-\item \strong{Data Preparation for Plotting}: Computes additional summary tables, including \code{pseudotime_trajectory()}, \code{phase_portrait()}, and \code{phase_lines()} based on the selected \code{option}. Both standard and fraction-based versions can be generated, providing an in-depth view of phase space dynamics.
-\item \strong{Plot Generation}: Creates various types of plots to visualize dynamics, including:
+\item \strong{Data Preparation for Plotting}: Computes additional summary tables, including \code{pseudotime_trajectory()}, \code{phase_portrait()}, and \code{phase_lines()} based on the selected \code{option}. Standard and fraction-based versions are available, providing an in-depth view of phase space dynamics.
+\item \strong{Plot Generation}: Generates various types of plots to visualize dynamics, including:
 \itemize{
-\item \code{trajectory_plots}: Displays pseudotime trajectories in phase space.
-\item \code{all_trajectory_plots}: Shows all sample trajectories over pseudotime.
-\item \code{stream_plots}: Displays dynamic phase portrait streams, representing variable changes over time.
-\item \code{phase_portrait_plots}: Shows a static view of the phase portrait, summarizing variable interactions.
-\item \code{phase_line_plots}: Visualizes phase lines across binned data, providing insights into directional trends.
-\item \code{n_plots}: Highlights the observation count within each phase space bin.
+\item \code{trajectory_plots}: Shows pseudotime trajectories in phase space.
+\item \code{all_trajectory_plots}: Displays all sample trajectories over pseudotime.
+\item \code{stream_plots}: Shows dynamic phase portrait streams, illustrating variable changes over time.
+\item \code{phase_portrait_plots}: Presents a static view of the phase portrait, summarizing variable interactions.
+\item \code{phase_line_plots}: Visualizes phase lines across binned data, highlighting directional trends.
+\item \code{n_plots}: Displays observation counts within each phase space bin.
 }
-\item \strong{Fraction-Based Plots}: Mirrors the standard plots but operates on a fraction-based representation of the data, with plot types prefixed by \code{fract_}.
-\item \strong{Plot Merging}: If \code{plot_combined} is TRUE, combines selected plots into a single layout for easier comparison and visualization of results, saving it as a single PDF file.
-\item \strong{Error Handling}: Each data processing and plotting step is wrapped in error handling, ensuring any issues are reported without halting the entire workflow.
+\item \strong{Fraction-Based Plots}: Mirrors the standard plots but uses a fraction-based data representation, with plot types prefixed by \code{fract_}.
+\item \strong{Plot Merging}: If \code{plot_combined} is TRUE, combines selected plots into a single layout for easier comparison, saved as a single PDF file.
+\item \strong{Error Handling}: Each data processing and plotting step includes error handling, ensuring that issues are reported without stopping the entire workflow.
 \item \strong{Parallel Processing}: Supports parallel processing with \code{n_cores} to optimize performance for large datasets.
 }
 
-This function is well-suited for exploratory data analysis and visual interpretation of phase space dynamics, especially valuable when examining complex systems over time. Enabling \code{save_tables} or \code{plot_individual} can result in multiple file outputs for detailed analysis, while combined plots are saved as a single PDF for convenience.
+This function is ideal for exploratory data analysis and visual interpretation of phase space dynamics, particularly for examining complex systems over time. Enabling \code{save_tables} or \code{plot_individual} can produce multiple file outputs for detailed analysis, while combined plots are saved as a single PDF for convenience.
 }
 \examples{
 # Example usage:

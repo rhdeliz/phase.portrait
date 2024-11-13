@@ -2,8 +2,7 @@
 % Please edit documentation in R/calculate_derivatives.R
 \name{calculate_derivatives}
 \alias{calculate_derivatives}
-\title{Calculate Rate of Change (Delta) in Values Over Time
-This function calculates the rate of change (delta) in the \code{value} column over \code{pseudotime}. The calculation method can be specified as lead, lag, or lead-lag.}
+\title{Calculate Rate of Change (Delta) in Values Over Time}
 \arguments{
 \item{df}{A data frame with \code{value}, \code{pseudotime}, \code{sample}, \code{condition}, and \code{variable} columns.}
 
@@ -23,8 +22,7 @@ Options are:
 A data frame with an added \code{delta} column (or specified name) representing the rate of change in \code{value} over \code{pseudotime}.
 }
 \description{
-Calculate Rate of Change (Delta) in Values Over Time
-This function calculates the rate of change (delta) in the \code{value} column over \code{pseudotime}. The calculation method can be specified as lead, lag, or lead-lag.
+This function calculates the rate of change (delta) in the \code{value} column over \code{pseudotime}. The calculation method can be specified as lead, lag, or lead-lag, allowing flexibility for datasets with varying temporal structures.
 }
 \examples{
 df <- data.frame(

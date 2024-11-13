@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_trajectory.R
 \name{plot_trajectory}
 \alias{plot_trajectory}
-\title{Plot Trajectory in Phase Space
-This function creates a phase space trajectory plot, visualizing \code{x} and \code{y} values along pseudotime. It connects \code{x1} to \code{x} and \code{x} to \code{x3} as well as \code{y1} to \code{y} and \code{y} to \code{y3}, representing directional flows with arrows. This enables a clear depiction of how each point in phase space progresses over time.}
+\title{Plot Trajectory in Phase Space}
 \usage{
 plot_trajectory(
   df,
@@ -17,12 +16,9 @@ plot_trajectory(
 )
 }
 \arguments{
-\item{df}{A dataframe containing columns for coordinates (\code{x}, \code{y}), pseudotime,
-and directional endpoints (\code{x1}, \code{x3}, \code{y1}, \code{y3}). Optionally includes
-\code{input} (plot label), \code{condition} (facet label), \code{x_variable}, and \code{y_variable}.}
+\item{df}{A dataframe containing columns for coordinates (\code{x}, \code{y}), pseudotime, and directional endpoints (\code{x1}, \code{x3}, \code{y1}, \code{y3}). Optionally includes \code{input} (plot label), \code{condition} (facet label), \code{x_variable}, and \code{y_variable}.}
 
-\item{input}{Character. Input type for the plot label. Default is "standard".
-If \code{df$input} exists, it will override this parameter.}
+\item{input}{Character. Input type for the plot label. Default is "standard". If \code{df$input} exists, it will override this parameter.}
 
 \item{min_x}{Numeric. Minimum x-axis limit for the plot. Default is NULL.}
 
@@ -38,14 +34,10 @@ If \code{df$input} exists, it will override this parameter.}
 A ggplot object of the trajectory plot, with customizable color and axis limits.
 }
 \description{
-Plot Trajectory in Phase Space
 This function creates a phase space trajectory plot, visualizing \code{x} and \code{y} values along pseudotime. It connects \code{x1} to \code{x} and \code{x} to \code{x3} as well as \code{y1} to \code{y} and \code{y} to \code{y3}, representing directional flows with arrows. This enables a clear depiction of how each point in phase space progresses over time.
 }
 \details{
-This function creates a phase space trajectory plot where points and paths
-are visualized with arrows to indicate directionality. It uses pseudotime as a
-color gradient to show progression through phase space. Faceting by the \code{condition}
-column allows for separate plots by specified condition.
+This function creates a phase space trajectory plot where points and paths are visualized with arrows to indicate directionality. It uses pseudotime as a color gradient to show progression through phase space. Faceting by the \code{condition} column allows for separate plots by specified condition.
 }
 \examples{
 # Example usage:
@@ -59,5 +51,4 @@ df <- data.frame(
   input = "custom_label"
 )
 plot_trajectory(df, min_x = 0, max_x = 5, min_y = 0, max_y = 5)
-
 }

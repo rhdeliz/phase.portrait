@@ -2,8 +2,7 @@
 % Please edit documentation in R/phase_lines.R
 \name{phase_lines}
 \alias{phase_lines}
-\title{Generate Phase Lines for Visualization (Binned, Averaged, or all)
-This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using \code{x} and \code{y} variables or their fractional representations. The result can be used to create phase line plots with separate facets for \code{dx} or \code{dy}, with flexibility to filter based on a minimum number of observations per bin.}
+\title{Generate Phase Lines for Visualization (Binned, Averaged, or All)}
 \usage{
 phase_lines(
   df,
@@ -15,7 +14,7 @@ phase_lines(
 )
 }
 \arguments{
-\item{df}{A data frame containing columns: \code{x}, \code{y}, \code{dx}, \code{dy}, \code{x_variable}, \code{y_variable}, \code{x_label}, \code{y_label}, \code{dx_label}, \code{dy_label}}
+\item{df}{A data frame containing columns: \code{x}, \code{y}, \code{dx}, \code{dy}, \code{x_variable}, \code{y_variable}, \code{x_label}, \code{y_label}, \code{dx_label}, \code{dy_label}.}
 
 \item{bin_width}{Integer specifying the number of bins to discretize \code{x} and \code{y}. Default is 4.}
 
@@ -24,12 +23,13 @@ phase_lines(
 \item{input}{Character string specifying "standard" for direct values or "fraction" for fractional representation.}
 
 \item{output}{Character string specifying output type: "binned", "average", or "all".}
+
+\item{save}{Logical, if TRUE, saves the resulting data frame as a compressed CSV file. Default is FALSE.}
 }
 \value{
 A data table with phase line summaries, including a column \code{output_type} indicating "binned" or "average".
 }
 \description{
-Generate Phase Lines for Visualization (Binned, Averaged, or all)
 This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using \code{x} and \code{y} variables or their fractional representations. The result can be used to create phase line plots with separate facets for \code{dx} or \code{dy}, with flexibility to filter based on a minimum number of observations per bin.
 }
 \examples{

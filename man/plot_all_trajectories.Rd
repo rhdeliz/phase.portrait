@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_all_trajectories.R
 \name{plot_all_trajectories}
 \alias{plot_all_trajectories}
-\title{Plot All Trajectories in Phase Space
-This function creates a phase space plot of all trajectories by visualizing \code{x} and \code{y} values across pseudotime. The plot can handle both standard and fraction-based input types, and provides options to customize axis limits, fix aspect ratio, and save the plot to a file.}
+\title{Plot All Trajectories in Phase Space}
 \arguments{
 \item{df}{A data frame containing \code{x}, \code{y}, \code{pseudotime}, \code{sample}, \code{condition}, \code{x_variable}, and \code{y_variable}.}
 
@@ -18,12 +17,13 @@ This function creates a phase space plot of all trajectories by visualizing \cod
 \item{max_y}{Numeric. Maximum y-axis limit for the plot. Default is NULL.}
 
 \item{save}{Logical, if TRUE, saves the plot as a PDF file. Default is FALSE.}
+
+\item{fix_coord}{Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.}
 }
 \value{
 A ggplot object of the phase space trajectories.
 }
 \description{
-Plot All Trajectories in Phase Space
 This function creates a phase space plot of all trajectories by visualizing \code{x} and \code{y} values across pseudotime. The plot can handle both standard and fraction-based input types, and provides options to customize axis limits, fix aspect ratio, and save the plot to a file.
 }
 \examples{

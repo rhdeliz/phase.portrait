@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_phase_line.R
 \name{plot_phase_line}
 \alias{plot_phase_line}
-\title{Plot Phase Lines in Phase Space
-This function generates a plot of phase lines in phase space, showing changes in \code{x} and \code{y} values (change rate) along with the grouping variable. It supports both standard and fraction-based input types and provides options to adjust axis limits, customize the plot's color scale, and save the plot as a PDF.}
+\title{Plot Phase Lines in Phase Space}
 \usage{
 plot_phase_line(
   df,
@@ -31,7 +30,6 @@ plot_phase_line(
 A ggplot object representing phase lines in phase space.
 }
 \description{
-Plot Phase Lines in Phase Space
 This function generates a plot of phase lines in phase space, showing changes in \code{x} and \code{y} values (change rate) along with the grouping variable. It supports both standard and fraction-based input types and provides options to adjust axis limits, customize the plot's color scale, and save the plot as a PDF.
 }
 \examples{

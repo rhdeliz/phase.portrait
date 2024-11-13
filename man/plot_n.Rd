@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_n.R
 \name{plot_n}
 \alias{plot_n}
-\title{Plot Cell Count (N) in Phase Space
-This function creates a phase space plot displaying the count (\code{n}) of observations in each bin. The plot can be generated for either standard or fraction-based input types, and provides options to customize axis limits, enforce a fixed aspect ratio, and save the plot to a file.}
+\title{Plot Cell Count (N) in Phase Space}
 \arguments{
 \item{df}{A data frame containing \code{x}, \code{y}, \code{n}, \code{condition}, \code{x_variable}, and \code{y_variable}.}
 
@@ -16,12 +15,13 @@ This function creates a phase space plot displaying the count (\code{n}) of obse
 \item{min_y, }{max_y Optional numeric values to set limits for the y-axis.}
 
 \item{save}{Logical, if TRUE, saves the plot as a PDF file. Default is FALSE.}
+
+\item{fix_coord}{Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.}
 }
 \value{
 A ggplot object showing the cell count (\code{n}) in phase space.
 }
 \description{
-Plot Cell Count (N) in Phase Space
 This function creates a phase space plot displaying the count (\code{n}) of observations in each bin. The plot can be generated for either standard or fraction-based input types, and provides options to customize axis limits, enforce a fixed aspect ratio, and save the plot to a file.
 }
 \examples{

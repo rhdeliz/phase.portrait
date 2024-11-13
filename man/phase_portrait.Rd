@@ -2,8 +2,7 @@
 % Please edit documentation in R/phase_portrait.R
 \name{phase_portrait}
 \alias{phase_portrait}
-\title{Generate Phase Portrait Summary (Standard or Fraction-Based)
-This function generates a phase portrait by binning \code{x} and \code{y} variables into discrete intervals and calculating the median rate of change (\code{dx} and \code{dy}) within each bin. It can be used to visualize the dynamics of two variables over binned states, either as a standard portrait or as a fraction-based portrait where \code{x} values are represented as fractions of the sum \code{(x + y)}.}
+\title{Generate Phase Portrait Summary (Standard or Fraction-Based)}
 \usage{
 phase_portrait(
   df,
@@ -29,6 +28,8 @@ phase_portrait(
 \item{min_bin_n}{Integer specifying the minimum number of observations required in each bin for it to be included in the output. Default is 1.}
 
 \item{input}{Character string specifying the input of data, either "standard" for standard binning or "fraction" for fraction-based binning.}
+
+\item{save}{Logical, if TRUE, saves the resulting data frame as a compressed CSV file. Default is FALSE.}
 }
 \value{
 A data frame with summarized phase portrait data containing:
@@ -43,8 +44,7 @@ A data frame with summarized phase portrait data containing:
 }
 }
 \description{
-Generate Phase Portrait Summary (Standard or Fraction-Based)
-This function generates a phase portrait by binning \code{x} and \code{y} variables into discrete intervals and calculating the median rate of change (\code{dx} and \code{dy}) within each bin. It can be used to visualize the dynamics of two variables over binned states, either as a standard portrait or as a fraction-based portrait where \code{x} values are represented as fractions of the sum \code{(x + y)}.
+This function generates a phase portrait by binning \code{x} and \code{y} variables into discrete intervals and calculating the median rate of change (\code{dx} and \code{dy}) within each bin. It supports both standard and fraction-based portraits, where \code{x} values can be shown as fractions of the total \code{(x + y)}, to visualize dynamics across binned states.
 }
 \examples{
 # Example usage
