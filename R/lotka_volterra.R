@@ -1,9 +1,7 @@
 #' @name lotka_volterra
 #' @title Lotka-Volterra Model Simulation
-#' This function generates an example dataset for this package, simulating several trajectories using predator-prey equations.
-#' @description This function simulates the Lotka-Volterra predator-prey model over a specified time range
-#' and initial conditions for the populations of prey and predator species. It generates a table of
-#' population dynamics for various starting conditions and parameter values.
+#' This function simulates the Lotka-Volterra predator-prey model over a specified time range and initial conditions for the populations of prey and predator species, generating a table of population dynamics for various starting conditions and parameter values.
+#' @description This function generates an example dataset for this package, simulating several trajectories using predator-prey equations.
 #' @param alpha Numeric. The growth rate of the prey population. Default is 1.1.
 #' @param beta Numeric. The rate of predation, describing how frequently predators consume prey. Default is 0.4.
 #' @param gamma Numeric. The mortality rate of the predator population. Default is 0.1.
@@ -18,12 +16,9 @@
 #' @param max_time Numeric. Ending time for the simulation. Default is 50.
 #' @param time_interval Numeric. Time increment for each simulation step. Default is 0.1.
 #'
-#' @return A data frame containing the time series of prey and predator populations for each initial condition
-#' and parameter set. The output includes columns for time, prey and predator populations, and initial conditions.
+#' @return A data frame containing the time series of prey and predator populations for each initial condition and parameter set. The output includes columns for time, prey and predator populations, and initial conditions.
 #'
-#' @details The Lotka-Volterra model describes the dynamics of biological systems in which two species interact,
-#' one as a predator and the other as prey. This function allows for exploring various initial conditions
-#' and parameter values to study the system's behavior under different scenarios.
+#' @details The Lotka-Volterra model describes the dynamics of biological systems in which two species interact, one as a predator and the other as prey. This function allows for exploring various initial conditions and parameter values to study the system's behavior under different scenarios.
 #'
 #' @examples
 #' # Run the Lotka-Volterra simulation with default parameters

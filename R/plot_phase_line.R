@@ -1,6 +1,6 @@
 #' @name plot_phase_line
 #' @title Plot Phase Lines in Phase Space
-#' This function generates a plot of phase lines in phase space, showing changes in `x` and `y` values (change rate) along with the grouping variable. It supports both standard and fraction-based input types and provides options to adjust axis limits, customize the plot's color scale, and save the plot as a PDF.
+#' @description This function generates a plot of phase lines in phase space, showing changes in `x` and `y` values (change rate) along with the grouping variable. It supports both standard and fraction-based input types and provides options to adjust axis limits, customize the plot's color scale, and save the plot as a PDF.
 #' @param df A data frame containing columns `x`, `y`, `n`, `group_var`, `condition`, `facet`, `x_variable`, and `y_variable`.
 #' @param input Character string specifying the input type, either "standard" or "fraction". Default is "standard".
 #' @param min_x, max_x Optional numeric values to set limits for the x-axis.
@@ -34,7 +34,7 @@ plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL,
       x, y
     ) %>%
     mutate(
-      n = log(n+1)
+      n = log(n + 1)
     ) %>%
     ggplot() +
     geom_hline(yintercept = 0) +
@@ -58,6 +58,7 @@ plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL,
     plot <- plot + scale_x_continuous(limits = c(min_x, max_x))
   }
 
+  # Add optional y-axis limits
   if (!is.null(min_y) && !is.null(max_y) && !any(is.na(c(min_y, max_y)))) {
     plot <- plot + scale_y_continuous(limits = c(min_y, max_y))
   }

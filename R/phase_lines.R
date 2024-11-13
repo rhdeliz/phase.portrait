@@ -1,11 +1,12 @@
 #' @name phase_lines
-#' @title Generate Phase Lines for Visualization (Binned, Averaged, or all)
-#' This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using `x` and `y` variables or their fractional representations. The result can be used to create phase line plots with separate facets for `dx` or `dy`, with flexibility to filter based on a minimum number of observations per bin.
-#' @param df A data frame containing columns: `x`, `y`, `dx`, `dy`, `x_variable`, `y_variable`, `x_label`, `y_label`, `dx_label`, `dy_label`
+#' @title Generate Phase Lines for Visualization (Binned, Averaged, or All)
+#' @description This function generates a data frame for visualizing phase lines by creating either binned, averaged, or all types of phase line summaries, using `x` and `y` variables or their fractional representations. The result can be used to create phase line plots with separate facets for `dx` or `dy`, with flexibility to filter based on a minimum number of observations per bin.
+#' @param df A data frame containing columns: `x`, `y`, `dx`, `dy`, `x_variable`, `y_variable`, `x_label`, `y_label`, `dx_label`, `dy_label`.
 #' @param bin_width Integer specifying the number of bins to discretize `x` and `y`. Default is 4.
 #' @param min_bin_n Integer specifying the minimum number of observations required in each bin.
 #' @param input Character string specifying "standard" for direct values or "fraction" for fractional representation.
 #' @param output Character string specifying output type: "binned", "average", or "all".
+#' @param save Logical, if TRUE, saves the resulting data frame as a compressed CSV file. Default is FALSE.
 #' @return A data table with phase line summaries, including a column `output_type` indicating "binned" or "average".
 #'
 #' @examples
@@ -90,5 +91,5 @@ phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard",
       paste0("phase_lines_", ifelse(input == "standard", "", paste0("_", input)), "_bin_width_", bin_width, ".csv.gz")
     )
   }
-return(phase_lines_dt)
+  return(phase_lines_dt)
 }

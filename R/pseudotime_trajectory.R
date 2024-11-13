@@ -1,6 +1,6 @@
 #' @name pseudotime_trajectory
 #' @title Calculate Pseudotime Trajectory Summary Statistics
-#' This function calculates summary statistics (median and quantiles) for `x` and `y` variables along a pseudotime trajectory within each condition. It groups data by `condition` and `pseudotime`, then computes the 25th and 75th percentiles, as well as the median, for each group. This can be used to analyze trends or patterns in `x` and `y` over pseudotime.
+#' @description This function calculates summary statistics (median and quantiles) for `x` and `y` variables along a pseudotime trajectory within each condition, computing the 25th and 75th percentiles, as well as the median for each group, to analyze trends in `x` and `y` over pseudotime.
 #' @param df A data frame containing the following columns:
 #'   - `condition`: Factor or character column indicating the experimental or observational condition.
 #'   - `pseudotime`: Numeric column indicating pseudotime or a sequential progression.

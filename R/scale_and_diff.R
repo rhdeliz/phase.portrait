@@ -1,45 +1,55 @@
 #' @name scale_and_diff
-#' @title Normalize Values and calculate derivatives
-#' This function normalizes a value column in a data frame using either max or min-max normalization.
-#' @param df A data frame with a `value` column to be normalized.
-#' @param normalization A character string specifying the normalization method.
-#'   Options are:
-#'   - `"max"` (default): Scales `value` by dividing by the maximum absolute value.
-#'   - `"min-max"`: Scales `value` to a 0-1 range by subtracting the minimum and dividing by the maximum.
-#' @return A data frame with the normalized `value` column.
+#' @title Normalize Values and Calculate Derivatives
+#' @description This function normalizes the `value` column within each group in a data frame and calculates the derivative (difference) between consecutive values. It first shifts values within each group to compute differences, then performs min-max normalization for consistency across groups. Optionally, results can be saved as a compressed CSV file.
+#' @param df A data frame with a `value` column to be normalized and a `variable` column for grouping.
+#' @param save Logical, if TRUE, saves the output as a compressed CSV file named "delta_lead.csv.gz". Default is FALSE.
+#' @return A data frame with normalized `value` and calculated `delta` columns.
 #' @examples
-#' df <- data.frame(value = c(1, 2, 3, 4, 5), variable = "var1")
-#' normalize_values(df, normalization = "min-max")
+#' # Create an example data frame for normalization and differentiation
+#' df <- data.frame(
+#'   value = c(1, 2, 3, 4, 5),
+#'   variable = "var1",
+#'   pseudotime = 1:5
+#' )
+#'
+#' # Apply normalization and differentiation
+#' normalized_df <- scale_and_diff(df)
+#'
+#' # Apply and save the output
+#' normalized_df <- scale_and_diff(df, save = TRUE)
 #' @export
 #' @import data.table
 scale_and_diff <- function(df, save = FALSE) {
 
   setDT(df)  # Convert to data.table if not already
 
-  # Group by 'variable' and perform the transformations
+  # Group by 'variable' and perform transformations
   df[, `:=`(
-    delta = value - shift(value)  # Calculate delta as difference from previous value
+    delta = value - shift(value)  # Calculate delta as the difference from previous value
   ), by = variable]
 
   df[, `:=`(
-    min = min(value),          # Find min of 'value' in each group
-    value = value - min(value)  # Subtract min from 'value'
+    min = min(value),             # Minimum of 'value' in each group
+    value = value - min(value)    # Subtract min from 'value' for min-max normalization
   ), by = variable]
 
   df[, `:=`(
-    max = max(value),            # Find max of 'value' in each group
-    value = value / max(value),  # Normalize 'value' by max
-    delta = delta / max(value)   # Normalize 'delta' by max
+    max = max(value),             # Maximum of 'value' in each group
+    value = value / max(value),   # Normalize 'value' by max within each group
+    delta = delta / max(value)    # Normalize 'delta' by max within each group
   ), by = variable]
 
+  # Remove temporary columns used for min-max normalization
   df$min <- NULL
   df$max <- NULL
 
+  # Optionally save the data frame as a compressed CSV file
   if (save) {
     fwrite(
       df,
-      paste0("delta_lead.csv.gz")
+      "delta_lead.csv.gz"
     )
   }
+
   return(df)
 }

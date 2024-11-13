@@ -1,6 +1,6 @@
 #' @name calculate_derivatives
 #' @title Calculate Rate of Change (Delta) in Values Over Time
-#' This function calculates the rate of change (delta) in the `value` column over `pseudotime`. The calculation method can be specified as lead, lag, or lead-lag.
+#' @description This function calculates the rate of change (delta) in the `value` column over `pseudotime`. The calculation method can be specified as lead, lag, or lead-lag, allowing flexibility for datasets with varying temporal structures.
 #' @param df A data frame with `value`, `pseudotime`, `sample`, `condition`, and `variable` columns.
 #' @param derivative A character string specifying the derivative method to calculate the rate of change.
 #'   Options are:

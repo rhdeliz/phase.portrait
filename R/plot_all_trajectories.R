@@ -1,6 +1,6 @@
 #' @name plot_all_trajectories
 #' @title Plot All Trajectories in Phase Space
-#' This function creates a phase space plot of all trajectories by visualizing `x` and `y` values across pseudotime. The plot can handle both standard and fraction-based input types, and provides options to customize axis limits, fix aspect ratio, and save the plot to a file.
+#' @description This function creates a phase space plot of all trajectories by visualizing `x` and `y` values across pseudotime. The plot can handle both standard and fraction-based input types, and provides options to customize axis limits, fix aspect ratio, and save the plot to a file.
 #' @param df A data frame containing `x`, `y`, `pseudotime`, `sample`, `condition`, `x_variable`, and `y_variable`.
 #' @param input A character string specifying the input type: either `"standard"` or `"fraction"`. Default is `"standard"`.
 #' @param min_x Numeric. Minimum x-axis limit for the plot. Default is NULL.
@@ -8,6 +8,7 @@
 #' @param min_y Numeric. Minimum y-axis limit for the plot. Default is NULL.
 #' @param max_y Numeric. Maximum y-axis limit for the plot. Default is NULL.
 #' @param save Logical, if TRUE, saves the plot as a PDF file. Default is FALSE.
+#' @param fix_coord Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.
 #' @return A ggplot object of the phase space trajectories.
 #' @examples
 #' plot_all_trajectories(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
@@ -29,7 +30,7 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
     input <- df$input[1]
   }
 
-  # Validate input` parameters to ensure they contain valid values
+  # Validate `input` parameter to ensure it contains valid values
   if (!input %in% c("standard", "fraction")) {
     stop("Invalid input: Choose 'standard' or 'fraction'")
   }
@@ -47,7 +48,7 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
       ) %>%
       ungroup() %>%
       mutate(
-        y = y/2
+        y = y / 2
       ) %>%
       as.data.table()
 

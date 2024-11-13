@@ -18,39 +18,34 @@
 #' @import ggplot2
 #' @import viridis
 #' @import metR
+
 plot_stream <- function(df, input = "standard", bin_width = 0.25,
                         min_x = NULL, max_x = NULL, min_y = NULL, max_y = NULL,
-                        save = FALSE, fix_coord = FALSE, res = 25){
+                        save = FALSE, fix_coord = FALSE, res = 25) {
 
-  # Override 'input' with df$input[1] if 'input' column exists in df
+  # Override 'input' with the first value in df$input if 'input' column exists in df
   if("input" %in% names(df)) {
     input <- df$input[1]
   }
 
-  # Validate input to ensure it contains valid values
+  # Validate input type to ensure it is either "standard" or "fraction"
   if (!input %in% c("standard", "fraction")) {
     stop("Invalid input: Choose 'standard' or 'fraction'")
   }
 
+  # Set default axis limits based on data range if not provided
   if(is.null(min_x)){min_x <- min(df$x)}
   if(is.null(max_x)){max_x <- max(df$x)}
   if(is.null(min_y)){min_y <- min(df$y)}
   if(is.null(max_y)){max_y <- max(df$y)}
 
-  # Define the binning scale for the grid with integer boundaries
-  scaled_min_x <- floor(min_x * bin_width)   # Rounds down to the nearest integer
-  scaled_min_x <- as.integer(scaled_min_x)
+  # Define integer boundaries for binning scale, using floor/ceiling functions
+  scaled_min_x <- as.integer(floor(min_x * bin_width))
+  scaled_max_x <- as.integer(ceiling(max_x * bin_width))
+  scaled_min_y <- as.integer(floor(min_y * bin_width))
+  scaled_max_y <- as.integer(ceiling(max_y * bin_width))
 
-  scaled_max_x <- ceiling(max_x * bin_width) # Rounds up to the nearest integer
-  scaled_max_x <- as.integer(scaled_max_x)
-
-  scaled_min_y <- floor(min_y * bin_width)   # Rounds down to the nearest integer
-  scaled_min_y <- as.integer(scaled_min_y)
-
-  scaled_max_y <- ceiling(max_y * bin_width) # Rounds up to the nearest integer
-  scaled_max_y <- as.integer(scaled_max_y)
-
-  # Create the grid using the actual bin size
+  # Create a grid of coordinates within the scaled min and max boundaries
   grid <- expand.grid(
     x = seq(scaled_min_x, scaled_max_x, by = bin_width),
     y = seq(scaled_min_y, scaled_max_y, by = bin_width),
@@ -64,42 +59,33 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
     dy_label = unique(df$dy_label)
   )
 
-  # Round coordinates in df to the nearest bin center based on calculated bin size
+  # Round data points in df to nearest bin center for x and y values
   df <- df %>%
     mutate(
       x = round(x / bin_width) * bin_width,
       y = round(y / bin_width) * bin_width
     )
 
-  # Merge the data with the grid, and calculate the color based on vector length
+  # Merge data with grid and calculate magnitude of the vector (color)
   result <- grid %>%
     left_join(df, by = c("x", "y", "input", "condition",
                          "x_variable", "y_variable",
                          "x_label", "y_label",
                          "dx_label", "dy_label")) %>%
-    mutate(color = sqrt(dx^2 + dy^2))
+    mutate(color = sqrt(dx^2 + dy^2)) # Calculate vector magnitude for coloring
 
-  # Arrange and finalize result
+  # Organize data for plotting, and calculate medians for dx and dy
   df <- result %>%
-    group_by(input, condition) %>%
-    arrange(x, y)
-
-  df <-
-    df %>%
-    group_by(input, condition,
-             x_variable, y_variable,
-             x_label, y_label,
-             x, y,
-             dx_label, dy_label) %>%
+    group_by(input, condition, x_variable, y_variable, x_label, y_label, x, y, dx_label, dy_label) %>%
     summarize(
       dx = median(dx, na.rm = TRUE),
       dy = median(dy, na.rm = TRUE)
     )
 
-  # Replace NA values with 0 for better plotting
+  # Replace any NA values with 0
   df[is.na(df)] <- 0
 
-  # Initialize ggplot with streamline layer to show phase dynamics
+  # Initialize ggplot with streamline layers
   plot <-
     ggplot() +
     geom_streamline(
@@ -109,7 +95,7 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
         dx = dx, dy = dy
       ),
       n = 10,              # Number of streamlines
-      L = bin_width*5,               # Length of streamlines
+      L = bin_width * 5,   # Length of streamlines
       res = res,
       linewidth = 0.1,
       color = "grey"
@@ -120,26 +106,27 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
         x, y,
         dx = dx, dy = dy
       ),
-      n = 10,              # Number of streamlines
-      L = bin_width*2,               # Length of streamlines
+      n = 10,
+      L = bin_width * 2,
       res = res,
       linewidth = 0.1
     ) +
     scale_color_viridis() +
     facet_grid(~condition) +
     labs(
-      title = paste("Phase portrait stream,", df$input[1]),  # Title with input label
-      x = paste0(df$x_label[1], "\n\n\n\n"),                  # X-axis label
-      y = df$y_label[1],                                      # Y-axis label
-      color = "Magnitude"                                     # Legend title for color
+      title = paste("Phase portrait stream,", df$input[1]),  # Add title with input label
+      x = paste0(df$x_label[1], "\n\n\n\n"),                  # Add x-axis label
+      y = df$y_label[1],                                      # Add y-axis label
+      color = "Magnitude"                                     # Color legend title
     ) +
     theme_classic(base_size = 12) +
     theme(
-      legend.position = "bottom",                             # Position legend at bottom
-      legend.key.width = unit(1, "cm"),                       # Width of legend key
-      axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis text
+      legend.position = "bottom",                             # Place legend at bottom
+      legend.key.width = unit(1, "cm"),                       # Legend key width
+      axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis labels
     )
 
+  # Add a fixed coordinate ratio if requested
   if(input == "standard" || fix_coord){
     plot <- plot + coord_fixed()
   }
@@ -152,11 +139,10 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
     plot <- plot + scale_y_continuous(limits = c(min_y, max_y))
   }
 
-  # Optionally save plot as a PDF with dynamic filename
+  # Optionally save plot as a PDF
   if(save) {
     ggsave(
-      filename = paste0("stream_",
-                        df$x_variable[1], "_", df$y_variable[1], "_", input,  ".pdf"),
+      filename = paste0("stream_", df$x_variable[1], "_", df$y_variable[1], "_", input, ".pdf"),
       plot = plot,
       height = 4, width = 6
     )

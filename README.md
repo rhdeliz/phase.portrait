@@ -31,26 +31,48 @@ Main features include:
 Here's a basic example demonstrating how to use **phase.portrait** to generate phase portraits and visualize data over pseudotime.
 
 ```r
-# Load the library
-library(phase.portrait)
+save_path <- "~/Documents/phase_portrait_analysis"
+bin_width = 0.1
+setwd(dirname(save_path))
+dir.create(save_path)
+setwd(save_path)
 
-# Generate a sample dataset
-df <- data.frame(
-  x = runif(100), y = runif(100), 
-  dx = rnorm(100), dy = rnorm(100),
-  condition = sample(c("A", "B"), 100, replace = TRUE),
-  x_variable = "Variable X", y_variable = "Variable Y"
-)
+save_path <- file.path(save_path, paste("bin_width", bin_width))
+dir.create(save_path)# Define the base path where analysis results will be saved
+save_path <- "~/Documents/phase_portrait_analysis"
 
-# Run a basic analysis with the run_analysis function
-run_analysis(
-  df, 
-  option = "all", 
-  n_bins = 4, 
-  min_bin_n = 1, 
-  save_tables = FALSE, 
-  plot_individual = TRUE
-)
+# Set the working directory to the parent directory of the save path
+setwd(dirname(save_path))
+
+# Create the base directory if it does not exist
+dir.create(save_path)
+
+# Change the working directory to the newly created save path
+setwd(save_path)
+
+# Create a subdirectory within the save path for storing results based on bin width
+save_path <- file.path(save_path, paste("bin_width", bin_width))
+dir.create(save_path)
+
+# Change the working directory to the bin-width-specific save path
+setwd(save_path)
+
+# Generate an example dataset by combining two sets of data with different parameters
+# `lotka_volterra()` generates synthetic data for phase portrait analysis
+example_dataset <- rbind(lotka_volterra(), lotka_volterra(alpha = 0.75))
+
+# Scale and compute the difference of the dataset to prepare for analysis
+d_table <- scale_and_diff(example_dataset)
+
+# Run the analysis with specified parameters:
+# - `option = "all"` specifies to perform a comprehensive analysis
+# - `bin_width` defines the bin size for the analysis
+# - `min_bin_n = 1` sets the minimum number of data points per bin
+setwd(save_path)
+
+example_dataset <- rbind(lotka_volterra(), lotka_volterra(alpha = 0.75))
+d_table <- scale_and_diff(example_dataset)
+run_analysis(d_table, option = "all", bin_width = bin_width, min_bin_n = 1)
 ```
 
 The `run_analysis` function allows for high-level control over data analysis, enabling users to generate various types of plots and tables based on input parameters. The `option` parameter lets you choose between "all", "standard", or "fraction" analysis types.

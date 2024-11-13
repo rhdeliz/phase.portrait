@@ -12,23 +12,23 @@
 #' @param phase_line_tables Character string specifying phase line table output format: "binned", "average", or "all". Default is "all".
 #'
 #' @details
-#' The `run_analysis` function is designed to process and visualize phase space data comprehensively, providing flexibility for standard and fraction-based representations of the data. The function offers several customizable options for binning, minimum observations per bin, and parallel processing. Users can select to save intermediary data tables, individual plots, or combined plots based on their analysis needs. The main components of this function include:
+#' The `run_analysis` function processes and visualizes phase space data comprehensively, offering flexibility for standard and fraction-based representations. Customizable options include binning, minimum observations per bin, and parallel processing. Users can save intermediary data tables, individual plots, or combined plots as needed. The main components of this function include:
 #'
 #' - **Phase Space Calculation**: Calls `phase_space()` to compute the core phase space dataset, using parallel processing if specified.
-#' - **Data Preparation for Plotting**: Computes additional summary tables, including `pseudotime_trajectory()`, `phase_portrait()`, and `phase_lines()` based on the selected `option`. Both standard and fraction-based versions can be generated, providing an in-depth view of phase space dynamics.
-#' - **Plot Generation**: Creates various types of plots to visualize dynamics, including:
-#'     - `trajectory_plots`: Displays pseudotime trajectories in phase space.
-#'     - `all_trajectory_plots`: Shows all sample trajectories over pseudotime.
-#'     - `stream_plots`: Displays dynamic phase portrait streams, representing variable changes over time.
-#'     - `phase_portrait_plots`: Shows a static view of the phase portrait, summarizing variable interactions.
-#'     - `phase_line_plots`: Visualizes phase lines across binned data, providing insights into directional trends.
-#'     - `n_plots`: Highlights the observation count within each phase space bin.
-#' - **Fraction-Based Plots**: Mirrors the standard plots but operates on a fraction-based representation of the data, with plot types prefixed by `fract_`.
-#' - **Plot Merging**: If `plot_combined` is TRUE, combines selected plots into a single layout for easier comparison and visualization of results, saving it as a single PDF file.
-#' - **Error Handling**: Each data processing and plotting step is wrapped in error handling, ensuring any issues are reported without halting the entire workflow.
+#' - **Data Preparation for Plotting**: Computes additional summary tables, including `pseudotime_trajectory()`, `phase_portrait()`, and `phase_lines()` based on the selected `option`. Standard and fraction-based versions are available, providing an in-depth view of phase space dynamics.
+#' - **Plot Generation**: Generates various types of plots to visualize dynamics, including:
+#'     - `trajectory_plots`: Shows pseudotime trajectories in phase space.
+#'     - `all_trajectory_plots`: Displays all sample trajectories over pseudotime.
+#'     - `stream_plots`: Shows dynamic phase portrait streams, illustrating variable changes over time.
+#'     - `phase_portrait_plots`: Presents a static view of the phase portrait, summarizing variable interactions.
+#'     - `phase_line_plots`: Visualizes phase lines across binned data, highlighting directional trends.
+#'     - `n_plots`: Displays observation counts within each phase space bin.
+#' - **Fraction-Based Plots**: Mirrors the standard plots but uses a fraction-based data representation, with plot types prefixed by `fract_`.
+#' - **Plot Merging**: If `plot_combined` is TRUE, combines selected plots into a single layout for easier comparison, saved as a single PDF file.
+#' - **Error Handling**: Each data processing and plotting step includes error handling, ensuring that issues are reported without stopping the entire workflow.
 #' - **Parallel Processing**: Supports parallel processing with `n_cores` to optimize performance for large datasets.
 #'
-#' This function is well-suited for exploratory data analysis and visual interpretation of phase space dynamics, especially valuable when examining complex systems over time. Enabling `save_tables` or `plot_individual` can result in multiple file outputs for detailed analysis, while combined plots are saved as a single PDF for convenience.
+#' This function is ideal for exploratory data analysis and visual interpretation of phase space dynamics, particularly for examining complex systems over time. Enabling `save_tables` or `plot_individual` can produce multiple file outputs for detailed analysis, while combined plots are saved as a single PDF for convenience.
 #'
 #' @return This function saves the generated plots and does not return a value.
 #'
@@ -92,29 +92,29 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
   phase_space_dt <- phase_space_dt %>% arrange(x_variable, y_variable)
   pseudotime_trajectory_dt <-
     if ("trajectory_plots" %in% option || "fract_trajectory_plots" %in% option) {
-    tryCatch({
-      result <- pseudotime_trajectory(phase_space_dt, save = save_tables)
-      print("Calculated pseudotime_trajectory_dt")
-      result  # Return the result of pseudotime_trajectory
-    }, error = function(e) {
-      cat("Error in calculating pseudotime trajectory:", e$message, "\n")
-      return(NULL)
-    })
-  } else NULL
+      tryCatch({
+        result <- pseudotime_trajectory(phase_space_dt, save = save_tables)
+        print("Calculated pseudotime_trajectory_dt")
+        result  # Return the result of pseudotime_trajectory
+      }, error = function(e) {
+        cat("Error in calculating pseudotime trajectory:", e$message, "\n")
+        return(NULL)
+      })
+    } else NULL
 
   phase_portrait_dt <-
     if ("stream_plots" %in% option || "phase_portrait_plots" %in% option || "phase_line_plots" %in% option || "n_plots" %in% option) {
-    tryCatch({
-      result <- phase_portrait(phase_space_dt, bin_width = bin_width, min_bin_n = min_bin_n, save = save_tables)
-      print("Calculated pseudotime_trajectory_dt")
-      result  # Return the result
-    }, error = function(e) {
-      cat("Error in calculating phase portrait:", e$message, "\n")
-      return(NULL)
-    })
-  } else {
-    NULL
-  }
+      tryCatch({
+        result <- phase_portrait(phase_space_dt, bin_width = bin_width, min_bin_n = min_bin_n, save = save_tables)
+        print("Calculated pseudotime_trajectory_dt")
+        result  # Return the result
+      }, error = function(e) {
+        cat("Error in calculating phase portrait:", e$message, "\n")
+        return(NULL)
+      })
+    } else {
+      NULL
+    }
   phase_lines_dt <- if ("phase_line_plots" %in% option) {
     tryCatch({
       result <- phase_lines(phase_portrait_dt, bin_width = bin_width,
@@ -140,16 +140,16 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
 
   fract_phase_portrait_dt <-
     if ("fract_stream_plots" %in% option || "fract_phase_portrait_plots" %in% option || "fract_phase_line_plots" %in% option || "fract_n_plots" %in% option) {
-    tryCatch({
-      result <- phase_portrait(phase_space_dt, bin_width = bin_width,
-                               min_bin_n = min_bin_n, save = save_tables, input = "fraction")
-      print("Calculated fract_phase_portrait_dt")
-      result
-    }, error = function(e) {
-      cat("Error in calculating fractional phase portrait:", e$message, "\n")
-      return(NULL)
-    })
-  } else NULL
+      tryCatch({
+        result <- phase_portrait(phase_space_dt, bin_width = bin_width,
+                                 min_bin_n = min_bin_n, save = save_tables, input = "fraction")
+        print("Calculated fract_phase_portrait_dt")
+        result
+      }, error = function(e) {
+        cat("Error in calculating fractional phase portrait:", e$message, "\n")
+        return(NULL)
+      })
+    } else NULL
 
   fract_lines_dt <- if ("fract_phase_line_plots" %in% option) {
     tryCatch({

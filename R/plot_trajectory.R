@@ -1,24 +1,15 @@
 #' @name plot_trajectory
 #' @title Plot Trajectory in Phase Space
-#' This function creates a phase space trajectory plot, visualizing `x` and `y` values along pseudotime. It connects `x1` to `x` and `x` to `x3` as well as `y1` to `y` and `y` to `y3`, representing directional flows with arrows. This enables a clear depiction of how each point in phase space progresses over time.
-#' @param df A dataframe containing columns for coordinates (`x`, `y`), pseudotime,
-#'   and directional endpoints (`x1`, `x3`, `y1`, `y3`). Optionally includes
-#'   `input` (plot label), `condition` (facet label), `x_variable`, and `y_variable`.
-#' @param input Character. Input type for the plot label. Default is "standard".
-#'   If `df$input` exists, it will override this parameter.
+#' @description This function creates a phase space trajectory plot, visualizing `x` and `y` values along pseudotime. It connects `x1` to `x` and `x` to `x3` as well as `y1` to `y` and `y` to `y3`, representing directional flows with arrows. This enables a clear depiction of how each point in phase space progresses over time.
+#' @param df A dataframe containing columns for coordinates (`x`, `y`), pseudotime, and directional endpoints (`x1`, `x3`, `y1`, `y3`). Optionally includes `input` (plot label), `condition` (facet label), `x_variable`, and `y_variable`.
+#' @param input Character. Input type for the plot label. Default is "standard". If `df$input` exists, it will override this parameter.
 #' @param min_x Numeric. Minimum x-axis limit for the plot. Default is NULL.
 #' @param max_x Numeric. Maximum x-axis limit for the plot. Default is NULL.
 #' @param min_y Numeric. Minimum y-axis limit for the plot. Default is NULL.
 #' @param max_y Numeric. Maximum y-axis limit for the plot. Default is NULL.
 #' @param save Logical. If TRUE, saves the plot as a PDF file. Default is FALSE.
-#'
-#' @details This function creates a phase space trajectory plot where points and paths
-#'   are visualized with arrows to indicate directionality. It uses pseudotime as a
-#'   color gradient to show progression through phase space. Faceting by the `condition`
-#'   column allows for separate plots by specified condition.
-#'
+#' @details This function creates a phase space trajectory plot where points and paths are visualized with arrows to indicate directionality. It uses pseudotime as a color gradient to show progression through phase space. Faceting by the `condition` column allows for separate plots by specified condition.
 #' @return A ggplot object of the trajectory plot, with customizable color and axis limits.
-#'
 #' @examples
 #' # Example usage:
 #' df <- data.frame(
@@ -31,7 +22,6 @@
 #'   input = "custom_label"
 #' )
 #' plot_trajectory(df, min_x = 0, max_x = 5, min_y = 0, max_y = 5)
-#'
 #' @export
 #' @import data.table
 #' @import ggplot2

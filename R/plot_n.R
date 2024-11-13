@@ -1,12 +1,13 @@
 #' @name plot_n
 #' @title Plot Cell Count (N) in Phase Space
-#' This function creates a phase space plot displaying the count (`n`) of observations in each bin. The plot can be generated for either standard or fraction-based input types, and provides options to customize axis limits, enforce a fixed aspect ratio, and save the plot to a file.
+#' @description This function creates a phase space plot displaying the count (`n`) of observations in each bin. The plot can be generated for either standard or fraction-based input types, and provides options to customize axis limits, enforce a fixed aspect ratio, and save the plot to a file.
 #' @param df A data frame containing `x`, `y`, `n`, `condition`, `x_variable`, and `y_variable`.
 #' @param bin_width Integer specifying the number of bins to use for x and y axes. Default is 4.
 #' @param input A character string specifying the input type, either "standard" or "fraction". Default is "standard".
 #' @param min_x, max_x Optional numeric values to set limits for the x-axis.
 #' @param min_y, max_y Optional numeric values to set limits for the y-axis.
 #' @param save Logical, if TRUE, saves the plot as a PDF file. Default is FALSE.
+#' @param fix_coord Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.
 #' @return A ggplot object showing the cell count (`n`) in phase space.
 #' @examples
 #' plot_n(df, bin_width = 4, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
@@ -34,13 +35,13 @@ plot_n <- function(df, bin_width = 0.25, input = "standard", min_x = NULL, max_x
     stop("Invalid input: Choose 'standard' or 'fraction'")
   }
 
-  bin_width <- 1/bin_width
+  bin_width <- 1 / bin_width
 
   # Initialize the plot with tile and text layers to represent the count `n`
   plot <- df %>%
     ggplot(aes(x, y, color = n, fill = n)) +
     geom_tile() +                     # Tile fill for each bin based on count `n`
-    scale_color_viridis(               # Set fill scale for `n`
+    scale_color_viridis(               # Set color scale for `n`
       option = "rocket",
       direction = -1,
       trans = "log1p",
@@ -75,12 +76,12 @@ plot_n <- function(df, bin_width = 0.25, input = "standard", min_x = NULL, max_x
 
   # Add optional x-axis limits if specified
   if (!is.null(min_x) && !is.null(max_x)) {
-    plot <- plot + scale_x_continuous(limits = c(min_x - 1/(bin_width), max_x + 1/(bin_width)))
+    plot <- plot + scale_x_continuous(limits = c(min_x - 1 / (bin_width), max_x + 1 / (bin_width)))
   }
 
   # Add optional y-axis limits if specified
   if (!is.null(min_y) && !is.null(max_y)) {
-    plot <- plot + scale_y_continuous(limits = c(min_y - 1/(bin_width), max_y + 1/(bin_width)))
+    plot <- plot + scale_y_continuous(limits = c(min_y - 1 / (bin_width), max_y + 1 / (bin_width)))
   }
 
   # Optionally save the plot as a PDF file with filename based on input type and variables

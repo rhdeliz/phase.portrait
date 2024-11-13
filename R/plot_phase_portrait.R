@@ -3,16 +3,19 @@ library(dplyr)
 library(ggplot2)
 library(viridis)
 library(metR)
+
 #' @name plot_phase_portrait
 #' @title Plot Phase Portrait
-#' This function generates a phase portrait plot, visualizing the dynamics of two variables (`x` and `y`) with arrows representing the rate of change (`dx` and `dy`). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
+#' @description This function generates a phase portrait plot, visualizing the dynamics of two variables (`x` and `y`) with arrows representing the rate of change (`dx` and `dy`). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
 #' @param df A data frame containing `x`, `y`, `dx`, `dy`, `condition`, `x_variable`, and `y_variable`.
 #' @param input A character string indicating the type of input. Defaults to `"standard"`.
+#' @param bin_width Numeric. Adjusts the length of arrows. Default is 0.25.
 #' @param min_x Numeric. Minimum x-axis limit for the plot. Default is NULL.
 #' @param max_x Numeric. Maximum x-axis limit for the plot. Default is NULL.
 #' @param min_y Numeric. Minimum y-axis limit for the plot. Default is NULL.
 #' @param max_y Numeric. Maximum y-axis limit for the plot. Default is NULL.
 #' @param save Logical, if TRUE saves the plot to a PDF file. Default is FALSE.
+#' @param fix_coord Logical, if TRUE enforces a fixed aspect ratio. Default is FALSE.
 #' @return A ggplot object showing the phase portrait.
 #' @examples
 #' plot_phase_portrait(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)
@@ -44,7 +47,7 @@ plot_phase_portrait <- function(df, input = "standard", bin_width = 0.25, min_x 
       dy_unit = dy / color * 1     # Normalize dy for unit arrow length
     )
 
-  arrow_length <- bin_width*5
+  arrow_length <- bin_width * 5
 
   # Initialize ggplot with arrows representing phase dynamics
   plot <- ggplot() +
@@ -59,7 +62,7 @@ plot_phase_portrait <- function(df, input = "standard", bin_width = 0.25, min_x 
       arrow.length = arrow_length              # Length of arrows (customize as needed)
     ) +
     scale_mag(                      # Scale arrowhead size
-      max = 1/(arrow_length/1.5),                    # Big arrow head
+      max = 1 / (arrow_length / 1.5),                    # Big arrow head
       guide = 'none'                # Hide guide for arrow magnitude
     ) +
     scale_color_viridis() +         # Color scale for the magnitude

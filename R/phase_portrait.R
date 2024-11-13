@@ -1,6 +1,6 @@
 #' @name phase_portrait
 #' @title Generate Phase Portrait Summary (Standard or Fraction-Based)
-#' This function generates a phase portrait by binning `x` and `y` variables into discrete intervals and calculating the median rate of change (`dx` and `dy`) within each bin. It can be used to visualize the dynamics of two variables over binned states, either as a standard portrait or as a fraction-based portrait where `x` values are represented as fractions of the sum `(x + y)`.
+#' @description This function generates a phase portrait by binning `x` and `y` variables into discrete intervals and calculating the median rate of change (`dx` and `dy`) within each bin. It supports both standard and fraction-based portraits, where `x` values can be shown as fractions of the total `(x + y)`, to visualize dynamics across binned states.
 #' @param df A data frame containing the following columns:
 #'   - `condition`: Factor or character column indicating the experimental or observational condition.
 #'   - `x`: Numeric column representing values for the x-axis variable.
@@ -11,6 +11,7 @@
 #' @param bin_width Integer specifying the number of bins to discretize `x` and `y` variables. Default is 4.
 #' @param min_bin_n Integer specifying the minimum number of observations required in each bin for it to be included in the output. Default is 1.
 #' @param input Character string specifying the input of data, either "standard" for standard binning or "fraction" for fraction-based binning.
+#' @param save Logical, if TRUE, saves the resulting data frame as a compressed CSV file. Default is FALSE.
 #' @return A data frame with summarized phase portrait data containing:
 #'   - `condition`, `x_variable`, `y_variable`: Grouping columns from the input.
 #'   - `x`, `y`: Discretized values of `x` and `y` or fractional representation of `x` and total size as `y`.
@@ -35,10 +36,6 @@ phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standar
 
   # Adjust binning parameter for zero-based rounding
   bin_width <- 1/bin_width
-
-  if(input != "standard"){
-    bin_width
-  }
 
   setDT(df)
   # Define labels for x and y based on input
@@ -73,8 +70,8 @@ phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standar
       condition, x_variable, y_variable, x, y, x_label, y_label
     ) %>%  # Include `x_label` and `y_label` in the grouping
     summarize(
-      dx = median(dx, na.rm = T),                   # Median rate of change for `x`
-      dy = median(dy, na.rm = T),                   # Median rate of change for `y`
+      dx = median(dx, na.rm = TRUE),                   # Median rate of change for `x`
+      dy = median(dy, na.rm = TRUE),                   # Median rate of change for `y`
       n = n(),                           # Count of observations in each bin
       .groups = "drop"
     ) %>%
