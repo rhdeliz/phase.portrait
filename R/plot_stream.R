@@ -98,7 +98,7 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
       L = bin_width * 5,   # Length of streamlines
       res = res,
       linewidth = 0.1,
-      color = "grey"
+      color = "lightgrey"
     ) +
     geom_streamline(
       data = df,
@@ -107,7 +107,7 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
         dx = dx, dy = dy
       ),
       n = 10,
-      L = bin_width * 2,
+      L = bin_width,
       res = res,
       linewidth = 0.1
     ) +

@@ -25,7 +25,7 @@ scale_and_diff <- function(df, save = FALSE) {
 
   # Group by 'variable' and perform transformations
   df[, `:=`(
-    delta = value - shift(value)  # Calculate delta as the difference from previous value
+    delta = shift(value, type = "lead")  - value # Calculate delta as the difference from next value
   ), by = variable]
 
   df[, `:=`(

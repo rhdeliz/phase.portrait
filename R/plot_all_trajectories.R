@@ -59,7 +59,8 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
 
   # Initialize the plot with point and path layers, using pseudotime as color scale
   plot <- ggplot(df, aes(x = x, y = y, color = pseudotime, group = sample)) +
-    geom_path(linewidth = 0.1) +                             # Connect points with lines
+    geom_point(size = 0.1, shape = ".") +
+    geom_path(linewidth = 0.1) +                         # Connect points with lines
     scale_color_viridis(option = "plasma") +             # Color scale for pseudotime
     facet_grid(~condition) +                             # Separate plot panels by condition
     labs(

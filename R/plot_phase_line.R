@@ -41,7 +41,7 @@ plot_phase_line <- function(df, input = "standard", min_x = NULL, max_x = NULL,
     geom_point(aes(x = x, y = y, size = n, color = group_var, group = group_var)) + # Add points
     geom_path(aes(x = x, y = y, color = group_var, group = group_var)) + # Add paths
     scale_size(range = c(0.01, 5)) +
-    scale_color_distiller(palette = "RdBu", na.value = "black") + # Use RdBu color scale
+    scale_color_distiller(palette = "RdYlBu", na.value = "black") + # Use RdBu color scale
     labs(
       title = paste("Phase lines,", input),  # Title with input type
       x = "Bin",  # x-axis label

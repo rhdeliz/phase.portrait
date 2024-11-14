@@ -44,14 +44,15 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL,
     df,
     aes(x = x, y = y, color = pseudotime)
   ) +
+
     # Segment from x1 to x, and from x to x3 to represent directional flow in x
-    geom_segment(aes(x = x1, xend = x3, y = y), size = .25) +
+    geom_segment(aes(x = x1, xend = x3, y = y), linewidth = 0.1) +
 
     # Segment from y1 to y, and from y to y3 to represent directional flow in y
-    geom_segment(aes(x = x, y = y1, yend = y3), size = .25) +
+    geom_segment(aes(x = x, y = y1, yend = y3), linewidth = 0.1) +
 
     # Draw path and point layers to trace and emphasize trajectory points
-    geom_path() +
+    geom_path(linewidth = 0.25) +
     geom_point(size = 0.1) +
 
     # Use the 'plasma' color palette from viridis for pseudotime progression
