@@ -1,6 +1,6 @@
 Package: phase.portrait
 Title: Phase Portrait Analysis
-Version: 0.0.0.0000
+Version: 0.0.0.1000
 Authors@R: 
     person("Rafael", "Deliz Aguirre", email = "rafael_pp@delizaguirre.com", 
            role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1861-8808"))

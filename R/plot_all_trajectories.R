@@ -72,7 +72,7 @@ plot_all_trajectories <- function(df, input = "standard", min_x = NULL, max_x = 
     theme_classic(base_size = 12) +                      # Classic theme
     theme(
       legend.position = "bottom",                        # Position legend at bottom
-      legend.key.width = unit(1, "cm"),                  # Width of legend key
+      legend.key.width = unit(0.75, "cm"),                  # Width of legend key
       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis text for readability
     )
 

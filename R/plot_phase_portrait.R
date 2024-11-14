@@ -6,7 +6,7 @@ library(metR)
 
 #' @name plot_phase_portrait
 #' @title Plot Phase Portrait
-#' @description This function generates a phase portrait plot, visualizing the dynamics of two variables (`x` and `y`) with arrows representing the rate of change (`dx` and `dy`). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
+#' @description This function generates a phase portrait plot, visualizing the dynamics of two variables (`x` and `y`) with arrows representing the rate of change (`dx` and `dy`). The plot uses color to indicate the speed of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
 #' @param df A data frame containing `x`, `y`, `dx`, `dy`, `condition`, `x_variable`, and `y_variable`.
 #' @param input A character string indicating the type of input. Defaults to `"standard"`.
 #' @param bin_width Numeric. Adjusts the length of arrows. Default is 0.25.
@@ -42,7 +42,7 @@ plot_phase_portrait <- function(df, input = "standard", bin_width = 0.25, min_x 
   # Calculate normalized color and unit direction for arrows
   df <- df %>%
     mutate(
-      color = sqrt(dx^2 + dy^2),   # Calculate the magnitude of change for color scaling
+      color = sqrt(dx^2 + dy^2),   # Calculate the speed of change for color scaling
       dx_unit = dx / color * 1,    # Normalize dx for unit arrow length
       dy_unit = dy / color * 1     # Normalize dy for unit arrow length
     )
@@ -65,18 +65,18 @@ plot_phase_portrait <- function(df, input = "standard", bin_width = 0.25, min_x 
       max = 1 / (arrow_length / 1.5),                    # Big arrow head
       guide = 'none'                # Hide guide for arrow magnitude
     ) +
-    scale_color_viridis() +         # Color scale for the magnitude
+    scale_color_viridis() +         # Color scale for the speed
     facet_grid(~condition) +        # Facet plot by condition
     labs(
       title = paste("Phase portrait,", input),       # Title with input label
       x = df$x_label[1],                          # Label for x-axis
       y = df$y_label[1],                          # Label for y-axis
-      color = "Magnitude"                            # Color legend title
+      color = "Speed"                            # Color legend title
     ) +
     theme_classic(base_size = 12) +      # Classic theme with base font size
     theme(
       legend.position = "bottom",                    # Place legend at bottom
-      legend.key.width = unit(1, "cm"),              # Width of legend key
+      legend.key.width = unit(0.75, "cm"),              # Width of legend key
       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Tilt x-axis text
     )
 

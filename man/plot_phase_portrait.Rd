@@ -39,7 +39,7 @@ plot_phase_portrait(
 A ggplot object showing the phase portrait.
 }
 \description{
-This function generates a phase portrait plot, visualizing the dynamics of two variables (\code{x} and \code{y}) with arrows representing the rate of change (\code{dx} and \code{dy}). The plot uses color to indicate the magnitude of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
+This function generates a phase portrait plot, visualizing the dynamics of two variables (\code{x} and \code{y}) with arrows representing the rate of change (\code{dx} and \code{dy}). The plot uses color to indicate the speed of change and can optionally enforce axis limits, aspect ratios, and save the plot to a file.
 }
 \examples{
 plot_phase_portrait(df, input = "standard", min_x = -10, max_x = 10, min_y = -5, max_y = 5, save = TRUE)

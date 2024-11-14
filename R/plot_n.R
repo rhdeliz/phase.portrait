@@ -66,8 +66,9 @@ plot_n <- function(df, bin_width = 0.25, input = "standard", min_x = NULL, max_x
     scale_size(guide = "none") +                  # Hide size legend
     theme(
       legend.position = "bottom",                 # Place legend at the bottom
-      legend.key.width = unit(1, "cm"),           # Set legend key width
-      axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis labels for readability
+      legend.key.width = unit(0.75, "cm"),           # Set legend key width
+      axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),  # Rotate x-axis labels for readability
+      legend.text = element_text(angle = 45, vjust = 1, hjust = 1)
     )
 
   if(input == "standard" || fix_coord){
@@ -76,12 +77,12 @@ plot_n <- function(df, bin_width = 0.25, input = "standard", min_x = NULL, max_x
 
   # Add optional x-axis limits if specified
   if (!is.null(min_x) && !is.null(max_x)) {
-    plot <- plot + scale_x_continuous(limits = c(min_x - 1 / (bin_width), max_x + 1 / (bin_width)))
+    plot <- plot + scale_x_continuous(limits = c(min_x - 1 / (bin_width*2), max_x + 1 / (bin_width*2)))
   }
 
   # Add optional y-axis limits if specified
   if (!is.null(min_y) && !is.null(max_y)) {
-    plot <- plot + scale_y_continuous(limits = c(min_y - 1 / (bin_width), max_y + 1 / (bin_width)))
+    plot <- plot + scale_y_continuous(limits = c(min_y - 1 / (bin_width*2), max_y + 1 / (bin_width*2)))
   }
 
   # Optionally save the plot as a PDF file with filename based on input type and variables

@@ -87,13 +87,13 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
 
   # Initialize ggplot with streamline layers
   plot <-
-    ggplot() +
+    ggplot(
+      df, aes(x, y, dx = dx, dy = dy)
+    ) +
+    # geom_raster(
+    #   aes(fill = sqrt(dx^2 + dy^2))
+    # ) +
     geom_streamline(
-      data = df,
-      aes(
-        x, y,
-        dx = dx, dy = dy
-      ),
       n = 10,              # Number of streamlines
       L = bin_width * 5,   # Length of streamlines
       res = res,
@@ -101,16 +101,12 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
       color = "lightgrey"
     ) +
     geom_streamline(
-      data = df,
-      aes(
-        x, y,
-        dx = dx, dy = dy
-      ),
       n = 10,
       L = bin_width,
       res = res,
       linewidth = 0.1
     ) +
+    scale_fill_viridis() +
     scale_color_viridis() +
     facet_grid(~condition) +
     labs(
@@ -122,7 +118,7 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
     theme_classic(base_size = 12) +
     theme(
       legend.position = "bottom",                             # Place legend at bottom
-      legend.key.width = unit(1, "cm"),                       # Legend key width
+      legend.key.width = unit(0.75, "cm"),                       # Legend key width
       axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)  # Rotate x-axis labels
     )
 

@@ -72,7 +72,7 @@ plot_trajectory <- function(df, input = "standard", min_x = NULL, max_x = NULL,
     theme_classic(base_size = 12) +
     theme(
       legend.position = "bottom",                                # Place legend below plot
-      legend.key.width = unit(1, "cm"),                          # Adjust legend key width
+      legend.key.width = unit(0.75, "cm"),                          # Adjust legend key width
       axis.text.x = element_text(angle = 45, vjust = 1, hjust=1) # Rotate x-axis labels
     )
 
