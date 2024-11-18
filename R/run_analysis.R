@@ -10,6 +10,7 @@
 #' @param plot_combined Logical. If TRUE, saves combined plots into one file for easy comparison. Default is TRUE.
 #' @param n_cores Integer specifying the number of cores to use for parallel processing. Default is NULL (auto-detect).
 #' @param phase_line_tables Character string specifying phase line table output format: "binned", "average", or "all". Default is "all".
+#' @param focus_variables Character representing the x-axis variable. Default is NULL
 #'
 #' @details
 #' The `run_analysis` function processes and visualizes phase space data comprehensively, offering flexibility for standard and fraction-based representations. Customizable options include binning, minimum observations per bin, and parallel processing. Users can save intermediary data tables, individual plots, or combined plots as needed. The main components of this function include:
@@ -48,7 +49,7 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
                          option = "all", phase_line_tables = "all",
                          save_tables = TRUE, plot_individual = TRUE,
                          plot_combined = TRUE, n_cores = NULL,
-                         stream_resolution = 25) {
+                         stream_resolution = 25, focus_variables = NULL) {
 
   original_option <- option  # Store the original option for later use
 
@@ -68,6 +69,7 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
   standard_list <- c("trajectory_plots", "all_trajectory_plots",
                      "stream_plots", "phase_portrait_plots",
                      "phase_line_plots", "n_plots")
+
   fraction_list <- paste0("fract_", standard_list)
 
   # Adjust the plot options based on the chosen option
@@ -81,7 +83,8 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
 
   # Generate the phase space table
   phase_space_dt <- tryCatch({
-    result <- phase_space(df, n_cores = n_cores, save = save_tables)
+    result <- phase_space(df, n_cores = n_cores, save = save_tables,
+                          focus_variables = focus_variables)
     print("Calculated phase_space")
     result  # Return the result
   }, error = function(e) {
@@ -89,7 +92,6 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
     return(NULL)
   })
 
-  phase_space_dt <- phase_space_dt %>% arrange(x_variable, y_variable)
   pseudotime_trajectory_dt <-
     if ("trajectory_plots" %in% option || "fract_trajectory_plots" %in% option) {
       tryCatch({
@@ -105,8 +107,9 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
   phase_portrait_dt <-
     if ("stream_plots" %in% option || "phase_portrait_plots" %in% option || "phase_line_plots" %in% option || "n_plots" %in% option) {
       tryCatch({
-        result <- phase_portrait(phase_space_dt, bin_width = bin_width, min_bin_n = min_bin_n, save = save_tables)
-        print("Calculated pseudotime_trajectory_dt")
+        result <- phase_portrait(phase_space_dt, bin_width = bin_width,
+                                 min_bin_n = min_bin_n, save = save_tables)
+        print("Calculated phase_portrait_dt")
         result  # Return the result
       }, error = function(e) {
         cat("Error in calculating phase portrait:", e$message, "\n")
@@ -118,7 +121,8 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
   phase_lines_dt <- if ("phase_line_plots" %in% option) {
     tryCatch({
       result <- phase_lines(phase_portrait_dt, bin_width = bin_width,
-                            min_bin_n = min_bin_n, output = phase_line_tables)
+                            min_bin_n = min_bin_n, output = phase_line_tables,
+                            save = save_tables)
       print("Calculated phase_lines_dt")
       result
     }, error = function(e) {
@@ -142,7 +146,8 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
     if ("fract_stream_plots" %in% option || "fract_phase_portrait_plots" %in% option || "fract_phase_line_plots" %in% option || "fract_n_plots" %in% option) {
       tryCatch({
         result <- phase_portrait(phase_space_dt, bin_width = bin_width,
-                                 min_bin_n = min_bin_n, save = save_tables, input = "fraction")
+                                 min_bin_n = min_bin_n, save = save_tables,
+                                 input = "fraction")
         print("Calculated fract_phase_portrait_dt")
         result
       }, error = function(e) {
@@ -155,7 +160,7 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
     tryCatch({
       result <- phase_lines(fract_phase_portrait_dt, bin_width = bin_width,
                             min_bin_n = min_bin_n, input = "fraction",
-                            output = phase_line_tables)
+                            output = phase_line_tables, save = save_tables)
       print("Calculated fract_lines_dt")
       result
     }, error = function(e) {
@@ -175,6 +180,24 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
       return(NULL)
     })
   } else NULL
+
+  variable_list <-
+    phase_space_dt %>%
+    ungroup() %>%
+    select(
+      x_variable, y_variable
+    ) %>%
+    distinct() %>%
+    rename(
+      x = x_variable,
+      y = y_variable
+    )
+
+  # Decrease paralellization if too many plots
+  n_plots <- NROW(variable_list)
+  if(n_plots > 500){
+    n_cores <- max(1, round(n_plots/150/n_cores))
+  }
 
   # Plot generation code blocks follow the same pattern
   trajectory_plots <- if ("trajectory_plots" %in% option) {
@@ -339,16 +362,6 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
     })
   }
 
-  # Generate variable list to prepare for combinations
-  variable_list <- df %>%
-    ungroup() %>%
-    select(variable) %>%
-    distinct() %>%
-    pull(variable)
-
-  variable_list <- expand.grid(variable_list, variable_list)
-  names(variable_list) <- c("x", "y")
-  variable_list <- variable_list %>% filter(x != y)
   # Define save_combined_plot globally to avoid redundant function creation
   save_combined_plot <- function(plot_grob, filename, height, width) {
     # Use Cairo PDF device for better compatibility with parallel processing
@@ -413,14 +426,17 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
 
     # Clean up to free memory
     rm(plot_elements, combined_grob)
+    dev.off()
     gc()
 
     return(NULL)
   }
 
-  # n_cores = max(c(1, round(n_cores/2)))
+  # Set cores to one for plot merging
   n_cores = 1
+
   # Apply merge function if combined plotting is requested
+  # Pending fix
   if (plot_combined & n_cores > 1 & original_option %in% c("all", "standard", "fraction")) {
     tryCatch({
       mclapply(1:NROW(variable_list), function(i) merge_plots(i, original_option), mc.cores = n_cores)
@@ -436,5 +452,5 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
       cat("Error in merging and saving combined plots:", e$message, "\n")
     })
   }
-
+  gc()
 }

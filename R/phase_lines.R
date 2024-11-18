@@ -15,7 +15,8 @@
 #' @export
 #' @import data.table
 #' @import dplyr
-phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard", output = "all", save = FALSE) {
+phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard",
+                        output = "all", save = FALSE) {
 
   # Validate input and output parameters
   if (!input %in% c("standard", "fraction")) {
@@ -32,13 +33,13 @@ phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard",
   # Generate binned data if "binned" or "all" output is selected
   if (output %in% c("binned", "all")) {
     binned_df <- rbindlist(list(
-      df[, .(bin = x, delta = dx, facet = paste(x_label, dx_label), group_var = -y,
+      df[, .(bin = x, delta = dx, facet = paste("x:",x_label, dx_label), group_var = -y,
              x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(x)],
-      df[, .(bin = x, delta = dy, facet = paste(x_label, dy_label), group_var = -y,
+      df[, .(bin = x, delta = dy, facet = paste("x:",x_label, dy_label), group_var = -y,
              x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(x)],
-      df[, .(bin = y, delta = dx, facet = paste(y_label, dx_label), group_var = x,
+      df[, .(bin = y, delta = dx, facet = paste("y:",y_label, dx_label), group_var = x,
              x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(y)],
-      df[, .(bin = y, delta = dy, facet = paste(y_label, dy_label), group_var = x,
+      df[, .(bin = y, delta = dy, facet = paste("y:",y_label, dy_label), group_var = x,
              x_variable, y_variable, x_label, y_label, dx_label, dy_label, condition, n = .N), by = .(y)]
     ), fill = TRUE)
 
@@ -65,13 +66,13 @@ phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard",
     ), by = .(input, condition, x_variable, y_variable, y, x_label, y_label, dx_label, dy_label)][n >= min_bin_n]
 
     avg_df <- rbindlist(list(
-      phase_x[, .(facet = paste(x_label, dy_label), bin = x, delta = dy, output_type = "average",
+      phase_x[, .(facet = paste("x:", x_label, dy_label), bin = x, delta = dy, output_type = "average",
                   condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
-      phase_x[, .(facet = paste(x_label, dx_label), bin = x, delta = dx, output_type = "average",
+      phase_x[, .(facet = paste("x:", x_label, dx_label), bin = x, delta = dx, output_type = "average",
                   condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
-      phase_y[, .(facet = paste(y_label, dx_label), bin = y, delta = dx, output_type = "average",
+      phase_y[, .(facet = paste("y:", y_label, dx_label), bin = y, delta = dx, output_type = "average",
                   condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)],
-      phase_y[, .(facet = paste(y_label, dy_label), bin = y, delta = dy, output_type = "average",
+      phase_y[, .(facet = paste("y:", y_label, dy_label), bin = y, delta = dy, output_type = "average",
                   condition, n, x_variable, y_variable, x_label, y_label, dx_label, dy_label)]
     ), fill = TRUE) %>% rename(x = bin, y = delta)
   }
@@ -88,7 +89,9 @@ phase_lines <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard",
   if (save) {
     fwrite(
       phase_lines_dt,
-      paste0("phase_lines_", ifelse(input == "standard", "", paste0("_", input)), "_bin_width_", bin_width, ".csv.gz")
+      paste0("phase_lines", ifelse(input == "standard", "", paste0("_", input)),
+             # "_bin_width_", bin_width,
+             ".csv.gz")
     )
   }
   return(phase_lines_dt)

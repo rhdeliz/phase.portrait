@@ -102,6 +102,6 @@ iterate_plotting <- function(df, fx, input = "standard", fixed_axes = TRUE, save
     # Parallel processing for Unix-based systems
     plots <- mclapply(split_pp, plot_fx, extra_args, mc.cores = n_cores)
   }
-
+  gc()
   return(plots) # Return the list of generated plots
 }

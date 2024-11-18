@@ -27,7 +27,8 @@
 #' @export
 #' @import data.table
 #' @import dplyr
-phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standard", save = FALSE) {
+phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1,
+                           input = "standard", save = FALSE) {
 
   # Validate input
   if (!input %in% c("standard", "fraction")) {
@@ -88,7 +89,7 @@ phase_portrait <- function(df, bin_width = 0.25, min_bin_n = 1, input = "standar
       phase_portrait_dt,
       paste0("phase_portrait",
              ifelse(input=="standard", "", paste0("_", input)),
-             "_bin_width_", bin_width,
+             # "_bin_width_", bin_width,
              ".csv.gz")
     )
   }

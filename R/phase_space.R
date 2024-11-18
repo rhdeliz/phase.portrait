@@ -11,6 +11,7 @@
 #' @param n_cores Integer specifying the number of cores to use for parallel processing.
 #'   If NULL, defaults to the total available cores minus two (if running on Unix). On Windows, `n_cores` is set to 1.
 #' @param save Logical, if TRUE, saves the output as a compressed CSV file. Default is FALSE.
+#' @param focus_variables Character representing the x-axis variable. Default is NULL
 #' @return A data frame containing phase space information with columns:
 #'   - `x`: Values of the first variable in each pairwise combination.
 #'   - `dx`: Derivative of the first variable.
@@ -39,7 +40,7 @@
 #' @import data.table
 #' @import dplyr
 #' @import parallel
-phase_space <- function(df, n_cores = NULL, save = FALSE) {
+phase_space <- function(df, n_cores = NULL, save = FALSE, focus_variables = NULL) {
 
   # Set the number of cores for parallel processing
   if (is.null(n_cores)) {
@@ -68,14 +69,35 @@ phase_space <- function(df, n_cores = NULL, save = FALSE) {
   # Split data by variable for pairwise combinations
   split_table <- df %>%
     ungroup() %>%
+    arrange(variable) %>%
     group_split(variable)
 
   # Generate all possible pairs of variables, excluding self-pairs
   n_variables <- NROW(split_table)
-  combinations <- expand.grid(1:n_variables, 1:n_variables)
-  names(combinations) <- c("x", "y")
-  # Remove pairs where x == y
-  combinations <- combinations %>% filter(x != y)
+
+  if(is.null(focus_variables)){
+    combinations <- t(combn(n_variables, 2))
+    combinations <- as.data.table(combinations)
+    names(combinations) <- c("x", "y")
+  } else{
+
+    x_variable_index <-
+      df %>%
+      ungroup() %>%
+      select(variable) %>%
+      distinct() %>%
+      arrange(variable) %>%
+      mutate(id = 1:n()) %>%
+      filter(variable %in% focus_variables) %>%
+      pull(id)
+
+    setDT(combinations)
+    combinations <- combinations[x %in% x_variable_index]
+
+    # Remove pairs where x == y
+    combinations <- combinations %>% filter(x != y)
+  }
+
 
   if (.Platform$OS.type == "windows") {
     # Export required objects to the cluster
@@ -113,6 +135,24 @@ phase_space <- function(df, n_cores = NULL, save = FALSE) {
   # Combine results into a single data frame
   df_phase_space <- rbindlist(df_phase_space)
   df_phase_space[, `:=`(x_label = x_variable, y_label = y_variable)]
+
+  if(is.null(focus_variables)){
+    df_phase_space_flipped <-
+      df_phase_space %>%
+      rename(
+        x = y,
+        y = x,
+        x_variable = y_variable,
+        y_variable = x_variable,
+        x_label = y_label,
+        y_label = x_label,
+        dx = dy,
+        dy = dx
+      )
+
+    df_phase_space <- rbind(df_phase_space, df_phase_space_flipped)
+    df_phase_space <- as.data.table(df_phase_space)
+  }
 
   # Optionally save as a compressed CSV file
   if(save) {

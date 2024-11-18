@@ -97,14 +97,14 @@ plot_stream <- function(df, input = "standard", bin_width = 0.25,
       n = 10,              # Number of streamlines
       L = bin_width * 5,   # Length of streamlines
       res = res,
-      linewidth = 0.1,
+      linewidth = 0.25,
       color = "lightgrey"
     ) +
     geom_streamline(
       n = 10,
       L = bin_width,
       res = res,
-      linewidth = 0.1
+      linewidth = 0.25
     ) +
     scale_fill_viridis() +
     scale_color_viridis() +

@@ -40,23 +40,13 @@ pseudotime_trajectory <- function(df, input = "standard", save = FALSE){
   }
 
   setDT(df)  # Ensure data.table format
+  pseudotime_trajectory <- copy(df)
 
   # Define labels for x and y based on input type
-  if (input == "standard") {
-    # Group by necessary variables
-    pseudotime_trajectory <- df[, .(
-      x1 = quantile(x, 0.25),             # 25th percentile of x
-      y1 = quantile(y, 0.25),             # 25th percentile of y
-      x3 = quantile(x, 0.75),             # 75th percentile of x
-      y3 = quantile(y, 0.75),             # 75th percentile of y
-      x = median(x),                      # Median of x
-      y = median(y),                      # Median of y
-      n = .N                              # Count of rows per group
-    ), by = .(condition, pseudotime, x_variable, y_variable, x_label, y_label)]  # Include all relevant labels in grouping
+  if (input != "standard") {
 
-  } else {
     pseudotime_trajectory <-
-      df %>%
+      pseudotime_trajectory %>%
       mutate(
         # Labels for fractional x and cumulative y
         x_label = paste0(x_variable, " pct"),
@@ -71,20 +61,19 @@ pseudotime_trajectory <- function(df, input = "standard", save = FALSE){
       mutate(
         y = y/2
       ) %>%
-      group_by(
-        condition, pseudotime, x_variable, y_variable, x_label, y_label
-      ) %>%
-      summarize(
-        x1 = quantile(x, 0.25),    # 25th percentile of transformed x
-        y1 = quantile(y, 0.25),    # 25th percentile of transformed y
-        x3 = quantile(x, 0.75),    # 75th percentile of transformed x
-        y3 = quantile(y, 0.75),    # 75th percentile of transformed y
-        x = median(x),      # Median of transformed x
-        y = median(y),      # Median of transformed y
-        n = n()                                # Count of rows per group
-      ) %>%
       as.data.table()
   }
+
+  # Group by necessary variables
+  pseudotime_trajectory <- pseudotime_trajectory[, .(
+    x1 = quantile(x, 0.25, na.rm = T),             # 25th percentile of x
+    y1 = quantile(y, 0.25, na.rm = T),             # 25th percentile of y
+    x3 = quantile(x, 0.75, na.rm = T),             # 75th percentile of x
+    y3 = quantile(y, 0.75, na.rm = T),             # 75th percentile of y
+    x = median(x, na.rm = T),                      # Median of x
+    y = median(y, na.rm = T),                      # Median of y
+    n = .N                              # Count of rows per group
+  ), by = .(condition, pseudotime, x_variable, y_variable, x_label, y_label)]  # Include all relevant labels in grouping
 
   # Save the output as CSV if `save` is TRUE
   if (save) {
