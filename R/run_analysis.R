@@ -181,6 +181,12 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
     })
   } else NULL
 
+  phase_space_dt <-
+    phase_space_dt %>%
+    arrange(
+      x_variable, y_variable
+    )
+
   variable_list <-
     phase_space_dt %>%
     ungroup() %>%
@@ -454,3 +460,4 @@ run_analysis <- function(df, bin_width = 0.25, min_bin_n = 1,
   }
   gc()
 }
+

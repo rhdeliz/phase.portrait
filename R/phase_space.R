@@ -75,12 +75,12 @@ phase_space <- function(df, n_cores = NULL, save = FALSE, focus_variables = NULL
   # Generate all possible pairs of variables, excluding self-pairs
   n_variables <- NROW(split_table)
 
-  if(is.null(focus_variables)){
-    combinations <- t(combn(n_variables, 2))
-    combinations <- as.data.table(combinations)
-    names(combinations) <- c("x", "y")
-  } else{
+  combinations <- t(combn(n_variables, 2))
+  combinations <- as.data.table(combinations)
+  names(combinations) <- c("x", "y")
+  combinations <- combinations %>% filter(x != y)
 
+  if(!is.null(focus_variables)){
     x_variable_index <-
       df %>%
       ungroup() %>%
@@ -92,12 +92,23 @@ phase_space <- function(df, n_cores = NULL, save = FALSE, focus_variables = NULL
       pull(id)
 
     setDT(combinations)
-    combinations <- combinations[x %in% x_variable_index]
+    combinations <- combinations[x %in% x_variable_index | y %in% x_variable_index]
 
-    # Remove pairs where x == y
-    combinations <- combinations %>% filter(x != y)
+    # Add explicit comparisons within x_variable_index if it contains multiple values
+    if (length(x_variable_index) > 1) {
+      additional_combinations <- as.data.table(t(combn(x_variable_index, 2)))
+      names(additional_combinations) <- c("x", "y")
+      combinations <- rbind(combinations, additional_combinations)
+    }
+
+    # Ensure x_variable_index values are always in the x column
+    combinations <- combinations[, .(
+      x = ifelse(x %in% x_variable_index, x, y),
+      y = ifelse(x %in% x_variable_index, y, x)
+    )]
+    combinations <- combinations %>% arrange(x, y)
+
   }
-
 
   if (.Platform$OS.type == "windows") {
     # Export required objects to the cluster
